@@ -1,7 +1,8 @@
 import { useLoaderData, useFetcher } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, Badge, ProgressBar, DataTable, ChoiceList, Select, EmptyState } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { getDashboardStats, refreshDeadStock } from "../services/detection.server";
@@ -51,7 +52,7 @@ export const loader = async ({ request }) => {
       : b.daysSinceSale - a.daysSinceSale);
   }
 
-  return { stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk") };
+  return { stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan };
 };
 
 export const action = async ({ request }) => {
@@ -72,7 +73,6 @@ export const action = async ({ request }) => {
 
   if (action === "bulk-discount") {
     const ids = JSON.parse(formData.get("ids") || "[]");
-    const pct = parseInt(formData.get("percentage") || "20", 10);
     for (const id of ids) {
       await prisma.deadStockEntry.updateMany({
         where: { productId: id, shop: session.shop },
@@ -106,14 +106,25 @@ export const action = async ({ request }) => {
   return null;
 };
 
+function BadgeForAction({ action, data }) {
+  const map = {
+    discount: { tone: "attention", label: `${data?.percentage || 20}% off` },
+    bundle: { tone: "info", label: "Bundle" },
+    archive: { tone: "critical", label: "Archive" },
+  };
+  const m = map[action] || { tone: "info", label: action };
+  return <Badge tone={m.tone}>{m.label}</Badge>;
+}
+
 export default function Dashboard() {
-  const { stats, deadStock, plan, canBulk } = useLoaderData();
+  const { stats, deadStock, plan, canBulk, needsScan } = useLoaderData();
   const shopify = useAppBridge();
   const fetcher = useFetcher();
   const [selected, setSelected] = useState(new Set());
   const [sortBy, setSortBy] = useState("days");
   const [order, setOrder] = useState("desc");
   const [filter, setFilter] = useState("all");
+  const [initialScanning, setInitialScanning] = useState(needsScan && !stats.lastScanAt);
 
   const toggleSelect = (id) => {
     const next = new Set(selected);
@@ -132,10 +143,8 @@ export default function Dashboard() {
     }
   }, [fetcher.data, fetcher.state, shopify]);
 
-  const [scanning, setScanning] = useState(!stats.lastScanAt);
-
   useEffect(() => {
-    if (!scanning) return;
+    if (!initialScanning) return;
     const interval = setInterval(async () => {
       try {
         const res = await fetch("/app/scan-status");
@@ -147,209 +156,192 @@ export default function Dashboard() {
       } catch {}
     }, 1000);
     return () => clearInterval(interval);
-  }, [scanning]);
+  }, [initialScanning]);
 
-  if (scanning) {
+  const handleBulkDiscount = useCallback(() => {
+    const pct = prompt("Discount percentage:", "20");
+    if (pct) fetcher.submit(
+      { action: "bulk-discount", ids: JSON.stringify([...selected]), percentage: pct },
+      { method: "post" }
+    );
+  }, [selected, fetcher]);
+
+  const handleBulkArchive = useCallback(() => {
+    if (confirm("Archive selected products?")) fetcher.submit(
+      { action: "bulk-archive", ids: JSON.stringify([...selected]) },
+      { method: "post" }
+    );
+  }, [selected, fetcher]);
+
+  const handleBulkExport = useCallback(() => {
+    fetcher.submit(
+      { action: "bulk-export", ids: JSON.stringify([...selected]) },
+      { method: "post" }
+    );
+  }, [selected, fetcher]);
+
+  if (initialScanning) {
     return (
-      <s-page heading="Dead Stock Dashboard">
-        <s-section>
-          <s-card padding="base">
-            <s-flex gap="base" direction="column" align="center">
-              <s-text size="large" variant="strong">Performing initial scan...</s-text>
-              <progress
-                style={{
-                  width: "100%", height: 12, borderRadius: 6,
-                  accentColor: "#008060",
-                }}
-              ></progress>
-              <s-text size="small" color="subdued">
-                Analyzing your products and order history
-              </s-text>
-            </s-flex>
-          </s-card>
-        </s-section>
-      </s-page>
+      <Page title="Dead Stock Dashboard">
+        <Card>
+          <BlockStack gap="400" align="center">
+            <Text variant="headingMd" as="h2">Performing initial scan...</Text>
+            <ProgressBar progress={0} size="large" color="success" />
+            <Text variant="bodySm" as="p" tone="subdued">
+              Analyzing your products and order history
+            </Text>
+          </BlockStack>
+        </Card>
+      </Page>
     );
   }
 
+  const statCards = [
+    { label: "Flagged Products", value: stats.totalDeadStock, tone: stats.totalDeadStock > 0 ? "critical" : "success" },
+    { label: "Stuck Inventory Value", value: `$${stats.totalValue.toLocaleString()}`, tone: stats.totalValue > 0 ? "critical" : "success" },
+    { label: "Weekly Trend", value: `${stats.trend > 0 ? "+" : ""}${stats.trend}%`, tone: stats.trend > 0 ? "critical" : "success" },
+    { label: "Plan", value: plan.charAt(0).toUpperCase() + plan.slice(1), tone: undefined },
+  ];
+
+  const filterChoices = [
+    { label: "All", value: "all" },
+    { label: "Discount", value: "discount" },
+    { label: "Bundle", value: "bundle" },
+    { label: "Archive", value: "archive" },
+  ];
+
+  const sortOptions = [
+    { label: "Days (newest first)", value: "days-desc" },
+    { label: "Days (oldest first)", value: "days-asc" },
+    { label: "Price (high to low)", value: "price-desc" },
+    { label: "Price (low to high)", value: "price-asc" },
+  ];
+
+  const rows = deadStock.map((entry) => {
+    const suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {};
+    return [
+      canBulk ? (
+        <input
+          type="checkbox"
+          checked={selected.has(entry.product.id)}
+          onChange={() => toggleSelect(entry.product.id)}
+        />
+      ) : null,
+      entry.product.title,
+      `$${entry.product.price.toFixed(2)}`,
+      String(entry.product.inventoryCount),
+      `${entry.daysSinceSale}d`,
+      entry.reason,
+      <BadgeForAction action={entry.suggestedAction} data={suggestedData} />,
+      <ButtonGroup>
+        <Button
+          variant="tertiary"
+          size="slim"
+          onClick={() => shopify.toast.show(`Apply ${suggestedData.percentage || 20}% discount to ${entry.product.title}`)}
+        >
+          Apply
+        </Button>
+        <fetcher.Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="exclude" />
+          <input type="hidden" name="productId" value={entry.product.id} />
+          <Button variant="tertiary" size="slim" submit>
+            Ignore
+          </Button>
+        </fetcher.Form>
+      </ButtonGroup>,
+    ];
+  }).filter(Boolean);
+
+  const dataTableColumns = [
+    ...(canBulk ? [{ content: "" }] : []),
+    { content: "Product" },
+    { content: "Price" },
+    { content: "Inventory" },
+    { content: "Days" },
+    { content: "Why" },
+    { content: "Suggested Action" },
+    { content: "Actions" },
+  ];
+
   return (
-    <s-page heading="Dead Stock Dashboard">
-      <s-section>
-        <s-flex gap="base" wrap="wrap">
-          <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-flex direction="column" gap="none">
-              <s-text size="small" color="subdued">Flagged Products</s-text>
-              <s-text size="xlarge" variant="strong" style={{ color: stats.totalDeadStock > 0 ? "#d82c0d" : "#008060" }}>
-                {stats.totalDeadStock}
-              </s-text>
-            </s-flex>
-          </s-card>
-          <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-flex direction="column" gap="none">
-              <s-text size="small" color="subdued">Stuck Inventory Value</s-text>
-              <s-text size="xlarge" variant="strong" style={{ color: stats.totalValue > 0 ? "#d82c0d" : "#008060" }}>
-                ${stats.totalValue.toLocaleString()}
-              </s-text>
-            </s-flex>
-          </s-card>
-          <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-flex direction="column" gap="none">
-              <s-text size="small" color="subdued">Weekly Trend</s-text>
-              <s-text size="xlarge" variant="strong" style={{ color: stats.trend > 0 ? "#d82c0d" : "#008060" }}>
-                {stats.trend > 0 ? "+" : ""}{stats.trend}%
-              </s-text>
-            </s-flex>
-          </s-card>
-          <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-flex direction="column" gap="none">
-              <s-text size="small" color="subdued">Plan</s-text>
-              <s-text size="xlarge" variant="strong">{plan.charAt(0).toUpperCase() + plan.slice(1)}</s-text>
-            </s-flex>
-          </s-card>
-        </s-flex>
-      </s-section>
+    <Page title="Dead Stock Dashboard">
+      <BlockStack gap="400">
+        <InlineStack gap="300" wrap={false}>
+          {statCards.map((s) => (
+            <Card key={s.label} padding="300" style={{ flex: 1 }}>
+              <BlockStack gap="100">
+                <Text variant="bodySm" tone="subdued" as="span">{s.label}</Text>
+                <Text variant="headingXl" as="p" tone={s.tone}>
+                  {s.value}
+                </Text>
+              </BlockStack>
+            </Card>
+          ))}
+        </InlineStack>
 
-      <s-section heading="Filters">
-        <s-flex gap="base" wrap="wrap" align="center">
-          <s-choice-list name="filter" value={filter} onChange={(v) => setFilter(v)}>
-            <s-choice-list-item value="all">All</s-choice-list-item>
-            <s-choice-list-item value="discount">Discount</s-choice-list-item>
-            <s-choice-list-item value="bundle">Bundle</s-choice-list-item>
-            <s-choice-list-item value="archive">Archive</s-choice-list-item>
-          </s-choice-list>
-          <s-select name="sort" value={`${sortBy}-${order}`} onChange={(v) => { const [s, o] = v.split("-"); setSortBy(s); setOrder(o); }}>
-            <option value="days-desc">Days (newest first)</option>
-            <option value="days-asc">Days (oldest first)</option>
-            <option value="price-desc">Price (high to low)</option>
-            <option value="price-asc">Price (low to high)</option>
-          </s-select>
-          {canBulk && selected.size > 0 && (
-            <s-text size="small" color="subdued">{selected.size} selected</s-text>
-          )}
-        </s-flex>
-      </s-section>
-
-      {canBulk && selected.size > 0 && (
-        <s-section heading="Bulk Actions">
-          <s-flex gap="base" wrap="wrap">
-            <s-button
-              variant="secondary"
-              onClick={() => {
-                const pct = prompt("Discount percentage:", "20");
-                if (pct) fetcher.submit(
-                  { action: "bulk-discount", ids: JSON.stringify([...selected]), percentage: pct },
-                  { method: "post" }
-                );
-              }}
-            >
-              Bulk Discount
-            </s-button>
-            <s-button
-              variant="secondary"
-              onClick={() => {
-                if (confirm("Archive selected products?")) fetcher.submit(
-                  { action: "bulk-archive", ids: JSON.stringify([...selected]) },
-                  { method: "post" }
-                );
-              }}
-            >
-              Bulk Archive
-            </s-button>
-            <s-button
-              variant="secondary"
-              onClick={() => fetcher.submit(
-                { action: "bulk-export", ids: JSON.stringify([...selected]) },
-                { method: "post" }
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Filters</Text>
+            <InlineStack gap="300" align="start" blockAlign="center">
+              <ChoiceList
+                title="Type"
+                titleHidden
+                choices={filterChoices}
+                selected={[filter]}
+                onChange={([v]) => setFilter(v)}
+              />
+              <Select
+                label="Sort"
+                labelHidden
+                options={sortOptions}
+                value={`${sortBy}-${order}`}
+                onChange={(v) => { const [s, o] = v.split("-"); setSortBy(s); setOrder(o); }}
+              />
+              {canBulk && selected.size > 0 && (
+                <Text variant="bodySm" tone="subdued" as="span">{selected.size} selected</Text>
               )}
-            >
-              Export Selected as CSV
-            </s-button>
-          </s-flex>
-        </s-section>
-      )}
+            </InlineStack>
+          </BlockStack>
+        </Card>
 
-      <s-section heading={filter === "all" ? "All Flagged Products" : `${filter.charAt(0).toUpperCase() + filter.slice(1)} Suggestions`}>
-        {deadStock.length === 0 ? (
-          <s-card padding="base">
-            <s-flex direction="column" align="center" gap="base" style={{ padding: "32px 16px" }}>
-              <s-text size="xlarge" variant="strong" style={{ color: "#008060" }}>
-                No dead stock found
-              </s-text>
-              <s-text color="subdued">
-                Your inventory looks healthy! All products have sold within your threshold period.
-              </s-text>
-            </s-flex>
-          </s-card>
-        ) : (
-          <s-table>
-            <s-table-header>
-              <s-table-header-cell>
-                {canBulk && (
-                  <input type="checkbox" checked={selected.size === deadStock.length} onChange={selectAll} />
-                )}
-              </s-table-header-cell>
-              <s-table-header-cell>Product</s-table-header-cell>
-              <s-table-header-cell>Price</s-table-header-cell>
-              <s-table-header-cell>Inventory</s-table-header-cell>
-              <s-table-header-cell>Days</s-table-header-cell>
-              <s-table-header-cell>Why</s-table-header-cell>
-              <s-table-header-cell>Suggested Action</s-table-header-cell>
-              <s-table-header-cell>Actions</s-table-header-cell>
-            </s-table-header>
-            <s-table-body>
-              {deadStock.map((entry) => {
-                const suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {};
-                return (
-                  <s-table-row key={entry.product.id}>
-                    <s-table-cell>
-                      {canBulk && (
-                        <input
-                          type="checkbox"
-                          checked={selected.has(entry.product.id)}
-                          onChange={() => toggleSelect(entry.product.id)}
-                        />
-                      )}
-                    </s-table-cell>
-                    <s-table-cell>
-                      <s-link href={`https://admin.shopify.com/product/${entry.product.id}`} target="_blank">
-                        {entry.product.title}
-                      </s-link>
-                    </s-table-cell>
-                    <s-table-cell>${entry.product.price.toFixed(2)}</s-table-cell>
-                    <s-table-cell>{entry.product.inventoryCount}</s-table-cell>
-                    <s-table-cell>{entry.daysSinceSale}d</s-table-cell>
-                    <s-table-cell>{entry.reason}</s-table-cell>
-                    <s-table-cell>
-                      <s-badge variant={entry.suggestedAction === "discount" ? "attention" : entry.suggestedAction === "bundle" ? "info" : "critical"}>
-                        {entry.suggestedAction === "discount" ? `${suggestedData.percentage || 20}% off` : entry.suggestedAction === "bundle" ? "Bundle" : "Archive"}
-                      </s-badge>
-                    </s-table-cell>
-                    <s-table-cell>
-                      <s-flex gap="base" wrap="nowrap">
-                        <s-button
-                          variant="tertiary"
-                          size="small"
-                          onClick={() => shopify.toast.show(`Apply ${suggestedData.percentage || 20}% discount to ${entry.product.title}`)}
-                        >
-                          Apply
-                        </s-button>
-                        <fetcher.Form method="post" style={{ display: "inline" }}>
-                          <input type="hidden" name="action" value="exclude" />
-                          <input type="hidden" name="productId" value={entry.product.id} />
-                          <s-button variant="tertiary" size="small" type="submit">
-                            Ignore
-                          </s-button>
-                        </fetcher.Form>
-                      </s-flex>
-                    </s-table-cell>
-                  </s-table-row>
-                );
-              })}
-            </s-table-body>
-          </s-table>
+        {canBulk && selected.size > 0 && (
+          <Card>
+            <BlockStack gap="300">
+              <Text variant="headingMd" as="h2">Bulk Actions</Text>
+              <ButtonGroup>
+                <Button variant="secondary" onClick={handleBulkDiscount}>Bulk Discount</Button>
+                <Button variant="secondary" onClick={handleBulkArchive}>Bulk Archive</Button>
+                <Button variant="secondary" onClick={handleBulkExport}>Export as CSV</Button>
+              </ButtonGroup>
+            </BlockStack>
+          </Card>
         )}
-      </s-section>
-    </s-page>
+
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">
+              {filter === "all" ? "All Flagged Products" : `${filter.charAt(0).toUpperCase() + filter.slice(1)} Suggestions`}
+            </Text>
+            {deadStock.length === 0 ? (
+              <EmptyState
+                heading="No dead stock found"
+                image={null}
+              >
+                <Text variant="bodyMd" as="p" tone="subdued">
+                  Your inventory looks healthy! All products have sold within your threshold period.
+                </Text>
+              </EmptyState>
+            ) : (
+              <DataTable
+                columnContentTypes={["text", "text", "numeric", "numeric", "numeric", "text", "text"]}
+                headings={dataTableColumns.map(c => c.content)}
+                rows={rows}
+              />
+            )}
+          </BlockStack>
+        </Card>
+      </BlockStack>
+    </Page>
   );
 }
 

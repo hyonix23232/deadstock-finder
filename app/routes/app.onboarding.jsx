@@ -1,5 +1,6 @@
 import { useLoaderData, useNavigate, redirect } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { Page, Card, Text, BlockStack, Button, Banner, ProgressBar, RadioButton, InlineStack } from "@shopify/polaris";
 
 export const loader = async ({ request }) => {
   const { authenticate } = await import("../shopify.server");
@@ -18,6 +19,12 @@ export const loader = async ({ request }) => {
 
   return { threshold: store.threshold };
 };
+
+const THRESHOLD_OPTIONS = [
+  { value: 30, label: "30 days", description: "For fast-moving consumer goods" },
+  { value: 60, label: "60 days", description: "Recommended for most stores" },
+  { value: 90, label: "90 days", description: "For seasonal or slow-moving inventory" },
+];
 
 export default function Onboarding() {
   const { threshold: initialThreshold } = useLoaderData();
@@ -46,117 +53,104 @@ export default function Onboarding() {
     return () => clearInterval(interval);
   }, [scanning, navigate]);
 
+  const handleScan = useCallback(async () => {
+    setScanning(true);
+    setError(null);
+    try {
+      const res = await fetch("/app/onboarding/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threshold }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        setError(`Scan failed (${res.status}): ${err}`);
+        setScanning(false);
+      }
+    } catch (err) {
+      setError(err.message || String(err));
+      setScanning(false);
+    }
+  }, [threshold]);
+
   if (scanning) {
     return (
-      <s-page heading="Scanning Your Store">
-        <s-section>
-          <s-card padding="base">
-            <s-flex gap="base" direction="column" align="center">
-              <s-text size="large" variant="strong" style={{ marginBottom: 8 }}>
-                We're analyzing your products and orders
-              </s-text>
-              <s-text size="small" color="subdued" style={{ marginBottom: 16 }}>
-                This usually takes 2–5 minutes depending on catalog size
-              </s-text>
-              <progress
-                id="scan-progress"
-                value="0"
-                max="100"
-                style={{
-                  width: "100%", height: 12, borderRadius: 6,
-                  accentColor: "#008060",
-                }}
-              ></progress>
-              <s-text id="scan-text" size="small" color="subdued">
-                Starting scan...
-              </s-text>
-            </s-flex>
-          </s-card>
-        </s-section>
+      <Page title="Scanning your store">
+        <Card>
+          <BlockStack gap="400" align="center">
+            <Text variant="headingMd" as="h2" alignment="center">
+              We're analyzing your products and orders
+            </Text>
+            <Text variant="bodySm" as="p" tone="subdued" alignment="center">
+              This usually takes 2–5 minutes depending on catalog size
+            </Text>
+            <ProgressBar
+              id="scan-progress"
+              progress={0}
+              size="large"
+              color="success"
+            />
+            <Text id="scan-text" variant="bodySm" as="p" tone="subdued" alignment="center">
+              Starting scan...
+            </Text>
+          </BlockStack>
+        </Card>
         {error && (
-          <s-section>
-            <s-banner status="critical">{error}</s-banner>
-          </s-section>
+          <Banner tone="critical" onDismiss={() => setError(null)}>
+            {error}
+          </Banner>
         )}
-      </s-page>
+      </Page>
     );
   }
 
   return (
-    <s-page heading="Welcome to Dead Stock Finder">
-      <s-section heading="Choose your detection threshold">
-        <s-paragraph>
-          Dead Stock Finder will flag any product that hasn't sold within your chosen time window.
-          You can change this at any time from Settings.
-        </s-paragraph>
-        <s-flex gap="base" direction="column" style={{ marginTop: 16 }}>
-          {[
-            { value: 30, label: "30 days", desc: "For fast-moving consumer goods" },
-            { value: 60, label: "60 days", desc: "Recommended for most stores" },
-            { value: 90, label: "90 days", desc: "For seasonal or slow-moving inventory" },
-          ].map((opt) => (
-            <s-card
-              key={opt.value}
-              padding="base"
-              onClick={() => setThreshold(opt.value)}
-              style={{
-                cursor: "pointer",
-                border: threshold === opt.value ? "2px solid #008060" : "2px solid transparent",
-                backgroundColor: threshold === opt.value ? "#f1f8f5" : undefined,
-              }}
-            >
-              <s-flex gap="base" align="center">
-                <input
-                  type="radio"
-                  name="threshold"
-                  value={opt.value}
-                  checked={threshold === opt.value}
-                  onChange={() => setThreshold(opt.value)}
-                  style={{ margin: 0 }}
-                />
-                <s-flex direction="column" gap="none">
-                  <s-text variant="strong">{opt.label}</s-text>
-                  <s-text size="small" color="subdued">{opt.desc}</s-text>
-                </s-flex>
-              </s-flex>
-            </s-card>
-          ))}
-        </s-flex>
-      </s-section>
+    <Page title="Welcome to Dead Stock Finder">
+      <BlockStack gap="400">
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Choose your detection threshold</Text>
+            <Text variant="bodySm" as="p" tone="subdued">
+              Dead Stock Finder will flag any product that hasn't sold within your chosen time window.
+              You can change this at any time from Settings.
+            </Text>
+            <BlockStack gap="200">
+              {THRESHOLD_OPTIONS.map((opt) => (
+                <Card
+                  key={opt.value}
+                  padding="300"
+                >
+                  <RadioButton
+                    label={
+                      <BlockStack gap="100">
+                        <Text variant="bodyMd" fontWeight="bold" as="span">{opt.label}</Text>
+                        <Text variant="bodySm" tone="subdued" as="span">{opt.description}</Text>
+                      </BlockStack>
+                    }
+                    checked={threshold === opt.value}
+                    onChange={() => setThreshold(opt.value)}
+                    id={`threshold-${opt.value}`}
+                    name="threshold"
+                  />
+                </Card>
+              ))}
+            </BlockStack>
+          </BlockStack>
+        </Card>
 
-      {error && (
-        <s-section>
-          <s-banner status="critical">{error}</s-banner>
-        </s-section>
-      )}
+        {error && (
+          <Banner tone="critical" onDismiss={() => setError(null)}>
+            {error}
+          </Banner>
+        )}
 
-      <s-section>
-        <s-button
-          variant="primary"
-          onClick={async () => {
-            setScanning(true);
-            setError(null);
-            try {
-              const res = await fetch("/app/onboarding/scan", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ threshold }),
-              });
-              if (!res.ok) {
-                const err = await res.text();
-                setError(`Scan failed (${res.status}): ${err}`);
-                setScanning(false);
-              }
-            } catch (err) {
-              setError(err.message || String(err));
-              setScanning(false);
-            }
-          }}
-        >
-          Start Scanning
-        </s-button>
-      </s-section>
-    </s-page>
+        <InlineStack gap="300">
+          <Button variant="primary" onClick={handleScan}>
+            Start Scanning
+          </Button>
+        </InlineStack>
+      </BlockStack>
+    </Page>
   );
 }
 

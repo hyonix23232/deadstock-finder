@@ -1,5 +1,6 @@
 import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, DataTable, Badge } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { hasFeature } from "../services/billing.server";
@@ -44,111 +45,111 @@ export default function Reports() {
 
   if (data.proOnly) {
     return (
-      <s-page heading="Reports">
-        <s-section>
-          <s-banner status="warning">
-            <s-heading>Upgrade to Pro</s-heading>
-            <s-paragraph>
+      <Page title="Reports">
+        <Banner tone="warning">
+          <BlockStack gap="200">
+            <Text variant="headingMd" as="h3">Upgrade to Pro</Text>
+            <Text variant="bodyMd" as="p">
               Downloadable reports are available on the Pro plan. Upgrade to access full dead stock history,
               CSV and PDF exports, and detailed inventory insights.
-            </s-paragraph>
-            <s-button
+            </Text>
+            <Button
               variant="primary"
               onClick={() => window.location.href = "/app/settings"}
             >
               Upgrade Now
-            </s-button>
-          </s-banner>
-        </s-section>
-      </s-page>
+            </Button>
+          </BlockStack>
+        </Banner>
+      </Page>
     );
   }
 
   const { scanHistory, deadStockHistory, stats } = data;
 
+  const statCards = [
+    { label: "Total Scans", value: stats.totalScans },
+    { label: "Dead Stock Found", value: stats.totalDeadStockDetected },
+    { label: "Resolved", value: stats.totalResolved },
+  ];
+
+  const historyRows = deadStockHistory.map((entry) => [
+    entry.product?.title || "Unknown",
+    new Date(entry.flaggedAt).toLocaleDateString(),
+    `${entry.daysSinceSale}d`,
+    <Badge tone={entry.resolved ? "success" : "critical"}>
+      {entry.resolved ? "Resolved" : "Active"}
+    </Badge>,
+  ]);
+
   return (
-    <s-page heading="Reports">
-      <s-section>
-        <s-flex gap="base" wrap="wrap">
-          <s-card padding="base" style={{ flex: 1, minWidth: 150 }}>
-            <s-text size="small" color="subdued">Total Scans</s-text>
-            <s-text size="xlarge" variant="strong">{stats.totalScans}</s-text>
-          </s-card>
-          <s-card padding="base" style={{ flex: 1, minWidth: 150 }}>
-            <s-text size="small" color="subdued">Dead Stock Found</s-text>
-            <s-text size="xlarge" variant="strong">{stats.totalDeadStockDetected}</s-text>
-          </s-card>
-          <s-card padding="base" style={{ flex: 1, minWidth: 150 }}>
-            <s-text size="small" color="subdued">Resolved</s-text>
-            <s-text size="xlarge" variant="strong">{stats.totalResolved}</s-text>
-          </s-card>
-        </s-flex>
-      </s-section>
+    <Page title="Reports">
+      <BlockStack gap="400">
+        <InlineStack gap="300" wrap={false}>
+          {statCards.map((s) => (
+            <Card key={s.label} padding="300" style={{ flex: 1 }}>
+              <BlockStack gap="100">
+                <Text variant="bodySm" tone="subdued" as="span">{s.label}</Text>
+                <Text variant="headingXl" as="p">{s.value}</Text>
+              </BlockStack>
+            </Card>
+          ))}
+        </InlineStack>
 
-      <s-section heading="Recent Dead Stock History">
-        {deadStockHistory.length === 0 ? (
-          <s-paragraph>No dead stock history yet.</s-paragraph>
-        ) : (
-          <s-table>
-            <s-table-header>
-              <s-table-header-cell>Product</s-table-header-cell>
-              <s-table-header-cell>Flagged</s-table-header-cell>
-              <s-table-header-cell>Days</s-table-header-cell>
-              <s-table-header-cell>Status</s-table-header-cell>
-            </s-table-header>
-            <s-table-body>
-              {deadStockHistory.map((entry) => (
-                <s-table-row key={entry.id}>
-                  <s-table-cell>{entry.product?.title || "Unknown"}</s-table-cell>
-                  <s-table-cell>{new Date(entry.flaggedAt).toLocaleDateString()}</s-table-cell>
-                  <s-table-cell>{entry.daysSinceSale}d</s-table-cell>
-                  <s-table-cell>
-                    <s-badge variant={entry.resolved ? "success" : "critical"}>
-                      {entry.resolved ? "Resolved" : "Active"}
-                    </s-badge>
-                  </s-table-cell>
-                </s-table-row>
-              ))}
-            </s-table-body>
-          </s-table>
-        )}
-      </s-section>
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Recent Dead Stock History</Text>
+            {deadStockHistory.length === 0 ? (
+              <Text variant="bodyMd" as="p" tone="subdued">No dead stock history yet.</Text>
+            ) : (
+              <DataTable
+                columnContentTypes={["text", "text", "numeric", "text"]}
+                headings={["Product", "Flagged", "Days", "Status"]}
+                rows={historyRows}
+              />
+            )}
+          </BlockStack>
+        </Card>
 
-      <s-section heading="Export">
-        <s-flex gap="base" wrap="wrap">
-          <s-button
-            variant="secondary"
-            onClick={async () => {
-              const res = await fetch("/app/reports/export?format=csv");
-              const blob = await res.blob();
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "deadstock-report.csv";
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            Export as CSV
-          </s-button>
-          <s-button
-            variant="secondary"
-            onClick={async () => {
-              const res = await fetch("/app/reports/export?format=pdf");
-              const blob = await res.blob();
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "deadstock-report.pdf";
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            Export as PDF
-          </s-button>
-        </s-flex>
-      </s-section>
-    </s-page>
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Export</Text>
+            <ButtonGroup>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  const res = await fetch("/app/reports/export?format=csv");
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "deadstock-report.csv";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export as CSV
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  const res = await fetch("/app/reports/export?format=pdf");
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "deadstock-report.pdf";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export as PDF
+              </Button>
+            </ButtonGroup>
+          </BlockStack>
+        </Card>
+      </BlockStack>
+    </Page>
   );
 }
 

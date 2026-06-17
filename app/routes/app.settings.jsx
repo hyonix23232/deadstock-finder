@@ -1,7 +1,8 @@
 import { useLoaderData, useFetcher } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, ChoiceList, DataTable, Badge } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { scanStore } from "../services/scanner.server";
@@ -88,99 +89,139 @@ export default function Settings() {
     }
   }, [fetcher.data, shopify]);
 
+  const planBadge = {
+    free: { tone: "info" },
+    starter: { tone: "success" },
+    pro: { tone: "success" },
+  }[currentPlan] || { tone: "info" };
+
   return (
-    <s-page heading="Settings">
-      <s-section heading="Detection Threshold">
-        <s-paragraph>Currently set to {store.threshold} days. Change when a product is considered dead stock.</s-paragraph>
-        <fetcher.Form method="post">
-          <input type="hidden" name="intent" value="update-threshold" />
-          <s-choice-list name="threshold" value={String(store.threshold)}>
-            <s-choice-list-item value="30">30 days</s-choice-list-item>
-            <s-choice-list-item value="60">60 days (Recommended)</s-choice-list-item>
-            <s-choice-list-item value="90">90 days</s-choice-list-item>
-          </s-choice-list>
-          <s-button type="submit" variant="primary" size="small">Save</s-button>
-        </fetcher.Form>
-      </s-section>
-
-      <s-section heading="Plan">
-        <s-paragraph>Current plan: <s-badge variant={currentPlan === "free" ? "info" : "success"}>{currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</s-badge></s-paragraph>
-        {currentPlan === "free" && (
-          <s-flex gap="base" wrap="wrap">
+    <Page title="Settings">
+      <BlockStack gap="400">
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Detection Threshold</Text>
+            <Text variant="bodySm" as="p" tone="subdued">
+              Currently set to {store.threshold} days. Change when a product is considered dead stock.
+            </Text>
             <fetcher.Form method="post">
-              <input type="hidden" name="intent" value="subscribe" />
-              <input type="hidden" name="plan" value="Starter" />
-              <s-button type="submit" variant="primary">Upgrade to Starter — $15/mo</s-button>
+              <input type="hidden" name="intent" value="update-threshold" />
+              <BlockStack gap="200">
+                <ChoiceList
+                  title="Threshold"
+                  titleHidden
+                  name="threshold"
+                  choices={[
+                    { label: "30 days", value: "30" },
+                    { label: "60 days (Recommended)", value: "60" },
+                    { label: "90 days", value: "90" },
+                  ]}
+                  selected={[String(store.threshold)]}
+                  onChange={() => {}}
+                />
+                <Button variant="primary" size="slim" submit>Save</Button>
+              </BlockStack>
             </fetcher.Form>
+          </BlockStack>
+        </Card>
+
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Plan</Text>
+            <InlineStack gap="200" align="start" blockAlign="center">
+              <Text variant="bodyMd" as="span">Current plan:</Text>
+              <Badge tone={planBadge.tone}>
+                {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
+              </Badge>
+            </InlineStack>
+            {currentPlan === "free" && (
+              <ButtonGroup>
+                <fetcher.Form method="post">
+                  <input type="hidden" name="intent" value="subscribe" />
+                  <input type="hidden" name="plan" value="Starter" />
+                  <Button variant="primary" submit>Upgrade to Starter — $15/mo</Button>
+                </fetcher.Form>
+                <fetcher.Form method="post">
+                  <input type="hidden" name="intent" value="subscribe" />
+                  <input type="hidden" name="plan" value="Pro" />
+                  <Button variant="primary" submit>Upgrade to Pro — $29/mo (7-day free trial)</Button>
+                </fetcher.Form>
+              </ButtonGroup>
+            )}
+            {currentPlan === "starter" && (
+              <fetcher.Form method="post">
+                <input type="hidden" name="intent" value="subscribe" />
+                <input type="hidden" name="plan" value="Pro" />
+                <Button variant="primary" submit>Upgrade to Pro — $29/mo (7-day free trial)</Button>
+              </fetcher.Form>
+            )}
+          </BlockStack>
+        </Card>
+
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Email Alerts</Text>
+            {canEmail ? (
+              <fetcher.Form method="post">
+                <input type="hidden" name="intent" value="toggle-email" />
+                <Text variant="bodyMd" as="span">
+                  <input type="checkbox" name="email" defaultChecked={store.emailEnabled} />
+                  {" "}Receive weekly Monday morning email summaries
+                </Text>
+                <div style={{ marginTop: 12 }}>
+                  <Button variant="primary" size="slim" submit>Save</Button>
+                </div>
+              </fetcher.Form>
+            ) : (
+              <Banner tone="warning">
+                <Text variant="bodyMd" as="p">
+                  Email alerts are available on Starter and Pro plans.
+                  {currentPlan === "free" ? " Upgrade to enable." : ""}
+                </Text>
+              </Banner>
+            )}
+          </BlockStack>
+        </Card>
+
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Excluded Products</Text>
+            {excludedProducts.length === 0 ? (
+              <Text variant="bodyMd" as="p" tone="subdued">
+                No excluded products. Products you ignore on the dashboard will appear here.
+              </Text>
+            ) : (
+              <DataTable
+                columnContentTypes={["text", "text", "text"]}
+                headings={["Product", "Reason", "Action"]}
+                rows={excludedProducts.map((ep) => [
+                  ep.product?.title || "Unknown",
+                  ep.reason || "Manual exclusion",
+                  <fetcher.Form method="post" key={ep.id}>
+                    <input type="hidden" name="intent" value="remove-exclusion" />
+                    <input type="hidden" name="exclusionId" value={ep.id} />
+                    <Button variant="tertiary" size="slim" submit>Restore</Button>
+                  </fetcher.Form>,
+                ])}
+              />
+            )}
+          </BlockStack>
+        </Card>
+
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Manual Rescan</Text>
+            <Text variant="bodySm" as="p" tone="subdued">
+              Trigger a full rescan of your inventory now.
+            </Text>
             <fetcher.Form method="post">
-              <input type="hidden" name="intent" value="subscribe" />
-              <input type="hidden" name="plan" value="Pro" />
-              <s-button type="submit" variant="primary">Upgrade to Pro — $29/mo (7-day free trial)</s-button>
+              <input type="hidden" name="intent" value="rescan" />
+              <Button variant="secondary" size="slim" submit>Rescan Now</Button>
             </fetcher.Form>
-          </s-flex>
-        )}
-        {currentPlan === "starter" && (
-          <fetcher.Form method="post">
-            <input type="hidden" name="intent" value="subscribe" />
-            <input type="hidden" name="plan" value="Pro" />
-            <s-button type="submit" variant="primary">Upgrade to Pro — $29/mo (7-day free trial)</s-button>
-          </fetcher.Form>
-        )}
-      </s-section>
-
-      <s-section heading="Email Alerts">
-        {canEmail ? (
-          <fetcher.Form method="post">
-            <input type="hidden" name="intent" value="toggle-email" />
-            <s-checkbox name="email" checked={store.emailEnabled}>
-              Receive weekly Monday morning email summaries
-            </s-checkbox>
-            <s-button type="submit" variant="primary" size="small">Save</s-button>
-          </fetcher.Form>
-        ) : (
-          <s-banner status="warning">
-            Email alerts are available on Starter and Pro plans.{currentPlan === "free" ? " Upgrade to enable." : ""}
-          </s-banner>
-        )}
-      </s-section>
-
-      <s-section heading="Excluded Products">
-        {excludedProducts.length === 0 ? (
-          <s-paragraph>No excluded products. Products you ignore on the dashboard will appear here.</s-paragraph>
-        ) : (
-          <s-table>
-            <s-table-header>
-              <s-table-header-cell>Product</s-table-header-cell>
-              <s-table-header-cell>Reason</s-table-header-cell>
-              <s-table-header-cell>Action</s-table-header-cell>
-            </s-table-header>
-            <s-table-body>
-              {excludedProducts.map((ep) => (
-                <s-table-row key={ep.id}>
-                  <s-table-cell>{ep.product?.title || "Unknown"}</s-table-cell>
-                  <s-table-cell>{ep.reason || "Manual exclusion"}</s-table-cell>
-                  <s-table-cell>
-                    <fetcher.Form method="post">
-                      <input type="hidden" name="intent" value="remove-exclusion" />
-                      <input type="hidden" name="exclusionId" value={ep.id} />
-                      <s-button type="submit" variant="tertiary" size="small">Restore</s-button>
-                    </fetcher.Form>
-                  </s-table-cell>
-                </s-table-row>
-              ))}
-            </s-table-body>
-          </s-table>
-        )}
-      </s-section>
-
-      <s-section heading="Manual Rescan">
-        <s-paragraph>Trigger a full rescan of your inventory now.</s-paragraph>
-        <fetcher.Form method="post">
-          <input type="hidden" name="intent" value="rescan" />
-          <s-button type="submit" variant="secondary" size="small">Rescan Now</s-button>
-        </fetcher.Form>
-      </s-section>
-    </s-page>
+          </BlockStack>
+        </Card>
+      </BlockStack>
+    </Page>
   );
 }
 

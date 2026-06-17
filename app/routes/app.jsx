@@ -2,6 +2,8 @@ import { Outlet, useLoaderData, useRouteError, useNavigate, redirect } from "rea
 import { useEffect } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
+import { AppProvider as PolarisProvider } from "@shopify/polaris";
+import enTranslations from "@shopify/polaris/locales/en.json";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 
@@ -34,14 +36,16 @@ export default function App() {
   if (onboardingRequired) return null;
 
   return (
-    <AppProvider embedded apiKey={apiKey}>
-      <ui-nav-menu>
-        <a href="/app" rel="home">Dashboard</a>
-        <a href="/app/settings">Settings</a>
-        <a href="/app/reports">Reports</a>
-      </ui-nav-menu>
-      <Outlet />
-    </AppProvider>
+    <PolarisProvider i18n={enTranslations}>
+      <AppProvider embedded apiKey={apiKey}>
+        <ui-nav-menu>
+          <a href="/app" rel="home">Dashboard</a>
+          <a href="/app/settings">Settings</a>
+          <a href="/app/reports">Reports</a>
+        </ui-nav-menu>
+        <Outlet />
+      </AppProvider>
+    </PolarisProvider>
   );
 }
 
