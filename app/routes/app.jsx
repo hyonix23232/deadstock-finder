@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData, useRouteError, useNavigate, redirect } from "react-router";
+import { Outlet, useLoaderData, useRouteError, useNavigate, NavLink } from "react-router";
 import { useEffect } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
@@ -6,6 +6,28 @@ import { AppProvider as PolarisProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
+
+const navStyle = {
+  borderBottom: "1px solid #e1e3e5",
+  background: "#fff",
+  padding: "0 20px",
+};
+
+const linkBase = {
+  display: "inline-block",
+  padding: "12px 16px",
+  textDecoration: "none",
+  fontWeight: "500",
+  fontSize: "14px",
+  color: "#5c5f62",
+  borderBottom: "2px solid transparent",
+  marginBottom: "-1px",
+};
+
+const linkActive = {
+  color: "#2c6eec",
+  borderBottomColor: "#2c6eec",
+};
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
@@ -38,11 +60,19 @@ export default function App() {
   return (
     <PolarisProvider i18n={enTranslations}>
       <AppProvider embedded apiKey={apiKey}>
-        <ui-nav-menu>
-          <a href="/app" rel="home">Dashboard</a>
-          <a href="/app/settings">Settings</a>
-          <a href="/app/reports">Reports</a>
-        </ui-nav-menu>
+        <div style={navStyle}>
+          <div style={{ display: "flex", gap: 0 }}>
+            <NavLink to="/app" end style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+              Dashboard
+            </NavLink>
+            <NavLink to="/app/settings" style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+              Settings
+            </NavLink>
+            <NavLink to="/app/reports" style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+              Reports
+            </NavLink>
+          </div>
+        </div>
         <Outlet />
       </AppProvider>
     </PolarisProvider>
