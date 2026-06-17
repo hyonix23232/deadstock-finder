@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, redirect } from "react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -14,6 +14,14 @@ import prisma from "../db.server";
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
+
+  const url = new URL(request.url);
+  if (!store.onboardingDone) {
+    const shop = url.searchParams.get("shop") || session.shop;
+    const host = url.searchParams.get("host");
+    const locale = url.searchParams.get("locale") || "en-US";
+    throw redirect(`/app/onboarding?${new URLSearchParams({ shop, host, embedded: "1", locale }).toString()}`);
+  }
 
   const needsScan = !store.lastScanAt ||
     (Date.now() - new Date(store.lastScanAt).getTime()) > 24 * 60 * 60 * 1000;
