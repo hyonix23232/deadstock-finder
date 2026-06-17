@@ -95,7 +95,7 @@ export default function Onboarding() {
             setScanning(true);
             setError(null);
             try {
-              const token = await shopify.getSessionToken();
+              const token = await shopify.idToken();
               const res = await fetch("/app/onboarding/scan", {
                 method: "POST",
                 headers: {
