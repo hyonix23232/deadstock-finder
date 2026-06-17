@@ -73,43 +73,50 @@ export default function Onboarding() {
 
   if (isScanning) {
     return (
-      <s-page heading="Scanning Your Store">
-        <s-section>
-          <s-paragraph>We're analyzing your products and order history. This usually takes 2–5 minutes.</s-paragraph>
-          <progress id="scan-progress" value="0" max="100" style={{ width: "100%", height: 20, borderRadius: 8 }}></progress>
-          <p id="scan-text" style={{ textAlign: "center", marginTop: 8, color: "#6d7175" }}>Starting scan...</p>
-        </s-section>
-      </s-page>
+      <div style={{ padding: "24px" }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>Scanning Your Store</h1>
+        <p style={{ marginBottom: 16, color: "#6d7175" }}>
+          We're analyzing your products and order history. This usually takes 2–5 minutes.
+        </p>
+        <progress id="scan-progress" value="0" max="100" style={{ width: "100%", height: 20, borderRadius: 8 }}></progress>
+        <p id="scan-text" style={{ textAlign: "center", marginTop: 8, color: "#6d7175" }}>Starting scan...</p>
+      </div>
     );
   }
 
   return (
-    <s-page heading="Welcome to Dead Stock Finder">
-      <s-section heading="Choose your detection threshold">
-        <s-paragraph>
+    <div style={{ padding: "24px", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
+      <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24 }}>Welcome to Dead Stock Finder</h1>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Choose your detection threshold</h2>
+        <p style={{ marginBottom: 16, color: "#6d7175" }}>
           Dead Stock Finder will flag any product that hasn't sold within your chosen time window.
           You can change this at any time from Settings.
-        </s-paragraph>
+        </p>
         <form method="post">
-          <s-choice-list name="threshold" title="Detection threshold">
-            <s-choice-list-item value="30">
-              <s-text><strong>30 days</strong> — For fast-moving consumer goods</s-text>
-            </s-choice-list-item>
-            <s-choice-list-item value="60" checked>
-              <s-text><strong>60 days</strong> — Recommended for most stores</s-text>
-            </s-choice-list-item>
-            <s-choice-list-item value="90">
-              <s-text><strong>90 days</strong> — For seasonal or slow-moving inventory</s-text>
-            </s-choice-list-item>
-          </s-choice-list>
-          <s-button-group>
-            <s-button type="submit" variant="primary">
-              Start Scanning
-            </s-button>
-          </s-button-group>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", marginBottom: 12, cursor: "pointer", padding: 12, border: "1px solid #d2d5d8", borderRadius: 8 }}>
+              <input type="radio" name="threshold" value="30" />
+              <strong style={{ marginLeft: 8 }}>30 days</strong>
+              <span style={{ marginLeft: 4, color: "#6d7175" }}>— For fast-moving consumer goods</span>
+            </label>
+            <label style={{ display: "block", marginBottom: 12, cursor: "pointer", padding: 12, border: "1px solid #008060", borderRadius: 8, backgroundColor: "#f1f8f5" }}>
+              <input type="radio" name="threshold" value="60" defaultChecked />
+              <strong style={{ marginLeft: 8 }}>60 days</strong>
+              <span style={{ marginLeft: 4, color: "#6d7175" }}>— Recommended for most stores</span>
+            </label>
+            <label style={{ display: "block", marginBottom: 12, cursor: "pointer", padding: 12, border: "1px solid #d2d5d8", borderRadius: 8 }}>
+              <input type="radio" name="threshold" value="90" />
+              <strong style={{ marginLeft: 8 }}>90 days</strong>
+              <span style={{ marginLeft: 4, color: "#6d7175" }}>— For seasonal or slow-moving inventory</span>
+            </label>
+          </div>
+          <button type="submit" style={{ padding: "10px 24px", fontSize: 14, fontWeight: 500, color: "#fff", backgroundColor: "#008060", border: "none", borderRadius: 6, cursor: "pointer" }}>
+            Start Scanning
+          </button>
         </form>
-      </s-section>
-    </s-page>
+      </div>
+    </div>
   );
 }
 
