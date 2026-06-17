@@ -32,7 +32,6 @@ const shopify = shopifyApp({
       trialDays: 7,
     },
   },
-  useOnlineTokens: true,
   future: {
     expiringOfflineAccessTokens: false,
   },
