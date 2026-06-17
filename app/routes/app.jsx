@@ -5,10 +5,20 @@ import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 
 export const loader = async ({ request }) => {
+  const url = new URL(request.url);
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
   if (!store.onboardingDone) {
-    throw redirect("/app/onboarding");
+    const shop = url.searchParams.get("shop") || session.shop;
+    const host = url.searchParams.get("host");
+    const locale = url.searchParams.get("locale") || "en-US";
+    const params = new URLSearchParams({
+      shop,
+      host,
+      embedded: "1",
+      locale,
+    });
+    throw redirect(`/app/onboarding?${params.toString()}`);
   }
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
