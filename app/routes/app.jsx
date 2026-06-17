@@ -1,10 +1,9 @@
-import { Outlet, useLoaderData, useRouteError, NavLink, redirect } from "react-router";
+import { Outlet, useLoaderData, useRouteError, NavLink } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { AppProvider as PolarisProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
 import { authenticate } from "../shopify.server";
-import { getOrCreateStore } from "../services/store.server";
 
 const navStyle = {
   borderBottom: "1px solid #e1e3e5",
@@ -29,17 +28,7 @@ const linkActive = {
 };
 
 export const loader = async ({ request }) => {
-  const url = new URL(request.url);
   const { session } = await authenticate.admin(request);
-
-  const store = await getOrCreateStore(session.shop);
-  if (!store.onboardingDone && url.pathname === "/app") {
-    const shop = url.searchParams.get("shop") || session.shop;
-    const host = url.searchParams.get("host");
-    const locale = url.searchParams.get("locale") || "en-US";
-    return redirect(`/app/onboarding?${new URLSearchParams({ shop, host, embedded: "1", locale }).toString()}`);
-  }
-
   return {
     apiKey: process.env.SHOPIFY_API_KEY || "",
   };

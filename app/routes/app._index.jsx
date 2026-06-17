@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, Navigate } from "react-router";
 import { useEffect, useState, useCallback } from "react";
 
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -14,6 +14,14 @@ import prisma from "../db.server";
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
+
+  const url = new URL(request.url);
+  if (!store.onboardingDone) {
+    const shop = url.searchParams.get("shop") || session.shop;
+    const host = url.searchParams.get("host");
+    const locale = url.searchParams.get("locale") || "en-US";
+    return { redirectTo: `/app/onboarding?${new URLSearchParams({ shop, host, embedded: "1", locale }).toString()}`, stats: null, deadStock: [], plan: "free", canBulk: false, needsScan: false };
+  }
 
   const needsScan = !store.lastScanAt ||
     (Date.now() - new Date(store.lastScanAt).getTime()) > 24 * 60 * 60 * 1000;
@@ -52,7 +60,7 @@ export const loader = async ({ request }) => {
       : b.daysSinceSale - a.daysSinceSale);
   }
 
-  return { stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan };
+  return { redirectTo: "", stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan };
 };
 
 export const action = async ({ request }) => {
@@ -117,8 +125,12 @@ function BadgeForAction({ action, data }) {
 }
 
 export default function Dashboard() {
-  const { stats, deadStock, plan, canBulk, needsScan } = useLoaderData();
+  const { redirectTo, stats, deadStock, plan, canBulk, needsScan } = useLoaderData();
   const fetcher = useFetcher();
+
+  if (redirectTo) {
+    return <Navigate to={redirectTo} replace />;
+  }
   const [selected, setSelected] = useState(new Set());
   const [sortBy, setSortBy] = useState("days");
   const [order, setOrder] = useState("desc");
