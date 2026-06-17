@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model Store {
+  shop              String   @id
+  plan              String   @default("free")
+  threshold         Int      @default(60)
+  scanStatus        String   @default("pending")
+  scanProgress      Int      @default(0)
+  lastScanAt        DateTime?
+  emailEnabled      Boolean  @default(false)
+  onboardingDone    Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  products          Product[]
+  deadStockEntries  DeadStockEntry[]
+  excludedProducts  ExcludedProduct[]
+  scanHistories     ScanHistory[]
+}
+
+model Product {
+  id             String   @id
+  shop           String
+  title          String
+  handle         String
+  price          Float
+  category       String?
+  inventoryCount Int      @default(0)
+  status         String   @default("active")
+  createdAt      DateTime
+  updatedAt      DateTime @updatedAt
+  lastOrderAt    DateTime?
+  totalSales     Int      @default(0)
+  totalViews     Int      @default(0)
+  store          Store    @relation(fields: [shop], references: [shop])
+  deadStockEntry DeadStockEntry[]
+  excludedBy     ExcludedProduct[]
+
+  @@unique([shop, handle])
+  @@index([shop])
+}
+
+model DeadStockEntry {
+  id           String   @id @default(cuid())
+  productId    String
+  shop         String
+  threshold    Int
+  daysSinceSale Int
+  reason       String
+  suggestedAction String
+  suggestedData String?
+  flaggedAt    DateTime @default(now())
+  resolvedAt   DateTime?
+  resolved     Boolean  @default(false)
+  product      Product  @relation(fields: [productId], references: [id])
+  store        Store    @relation(fields: [shop], references: [shop])
+
+  @@index([shop, resolved])
+  @@index([shop, flaggedAt])
+}
+
+model ExcludedProduct {
+  id        String   @id @default(cuid())
+  productId String
+  shop      String
+  reason    String?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  store     Store    @relation(fields: [shop], references: [shop])
+
+  @@unique([shop, productId])
+  @@index([shop])
+}
+
+model ScanHistory {
+  id         String   @id @default(cuid())
+  shop       String
+  productsScanned Int  @default(0)
+  deadStockFound Int   @default(0)
+  status     String   @default("completed")
+  startedAt  DateTime @default(now())
+  completedAt DateTime?
+  store      Store    @relation(fields: [shop], references: [shop])
+
+  @@index([shop, startedAt])
+}
