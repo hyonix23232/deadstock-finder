@@ -132,31 +132,79 @@ export default function Dashboard() {
     }
   }, [fetcher.data, fetcher.state, shopify]);
 
+  const [scanning, setScanning] = useState(!stats.lastScanAt);
+
+  useEffect(() => {
+    if (!scanning) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/app/scan-status");
+        const data = await res.json();
+        if (data.scanStatus === "completed") {
+          clearInterval(interval);
+          window.location.reload();
+        }
+      } catch {}
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [scanning]);
+
+  if (scanning) {
+    return (
+      <s-page heading="Dead Stock Dashboard">
+        <s-section>
+          <s-card padding="base">
+            <s-flex gap="base" direction="column" align="center">
+              <s-text size="large" variant="strong">Performing initial scan...</s-text>
+              <progress
+                style={{
+                  width: "100%", height: 12, borderRadius: 6,
+                  accentColor: "#008060",
+                }}
+              ></progress>
+              <s-text size="small" color="subdued">
+                Analyzing your products and order history
+              </s-text>
+            </s-flex>
+          </s-card>
+        </s-section>
+      </s-page>
+    );
+  }
+
   return (
     <s-page heading="Dead Stock Dashboard">
       <s-section>
         <s-flex gap="base" wrap="wrap">
           <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-text size="small" color="subdued">Flagged Products</s-text>
-            <s-text size="xlarge" variant="strong" style={{ color: "#d82c0d" }}>
-              {stats.totalDeadStock}
-            </s-text>
+            <s-flex direction="column" gap="none">
+              <s-text size="small" color="subdued">Flagged Products</s-text>
+              <s-text size="xlarge" variant="strong" style={{ color: stats.totalDeadStock > 0 ? "#d82c0d" : "#008060" }}>
+                {stats.totalDeadStock}
+              </s-text>
+            </s-flex>
           </s-card>
           <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-text size="small" color="subdued">Stuck Inventory Value</s-text>
-            <s-text size="xlarge" variant="strong" style={{ color: "#d82c0d" }}>
-              ${stats.totalValue.toLocaleString()}
-            </s-text>
+            <s-flex direction="column" gap="none">
+              <s-text size="small" color="subdued">Stuck Inventory Value</s-text>
+              <s-text size="xlarge" variant="strong" style={{ color: stats.totalValue > 0 ? "#d82c0d" : "#008060" }}>
+                ${stats.totalValue.toLocaleString()}
+              </s-text>
+            </s-flex>
           </s-card>
           <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-text size="small" color="subdued">Weekly Trend</s-text>
-            <s-text size="xlarge" variant="strong" style={{ color: stats.trend > 0 ? "#d82c0d" : "#008060" }}>
-              {stats.trend > 0 ? "+" : ""}{stats.trend}%
-            </s-text>
+            <s-flex direction="column" gap="none">
+              <s-text size="small" color="subdued">Weekly Trend</s-text>
+              <s-text size="xlarge" variant="strong" style={{ color: stats.trend > 0 ? "#d82c0d" : "#008060" }}>
+                {stats.trend > 0 ? "+" : ""}{stats.trend}%
+              </s-text>
+            </s-flex>
           </s-card>
           <s-card padding="base" style={{ flex: 1, minWidth: 180 }}>
-            <s-text size="small" color="subdued">Plan</s-text>
-            <s-text size="xlarge" variant="strong">{plan.charAt(0).toUpperCase() + plan.slice(1)}</s-text>
+            <s-flex direction="column" gap="none">
+              <s-text size="small" color="subdued">Plan</s-text>
+              <s-text size="xlarge" variant="strong">{plan.charAt(0).toUpperCase() + plan.slice(1)}</s-text>
+            </s-flex>
           </s-card>
         </s-flex>
       </s-section>
@@ -222,7 +270,16 @@ export default function Dashboard() {
 
       <s-section heading={filter === "all" ? "All Flagged Products" : `${filter.charAt(0).toUpperCase() + filter.slice(1)} Suggestions`}>
         {deadStock.length === 0 ? (
-          <s-paragraph>No dead stock found. Your inventory looks healthy!</s-paragraph>
+          <s-card padding="base">
+            <s-flex direction="column" align="center" gap="base" style={{ padding: "32px 16px" }}>
+              <s-text size="xlarge" variant="strong" style={{ color: "#008060" }}>
+                No dead stock found
+              </s-text>
+              <s-text color="subdued">
+                Your inventory looks healthy! All products have sold within your threshold period.
+              </s-text>
+            </s-flex>
+          </s-card>
         ) : (
           <s-table>
             <s-table-header>
@@ -268,7 +325,7 @@ export default function Dashboard() {
                       </s-badge>
                     </s-table-cell>
                     <s-table-cell>
-                      <s-flex gap="base">
+                      <s-flex gap="base" wrap="nowrap">
                         <s-button
                           variant="tertiary"
                           size="small"

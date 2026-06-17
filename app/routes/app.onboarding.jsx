@@ -48,47 +48,91 @@ export default function Onboarding() {
 
   if (scanning) {
     return (
-      <div style={{ padding: "24px" }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 16 }}>Scanning Your Store</h1>
-        <p style={{ marginBottom: 16, color: "#6d7175" }}>
-          We're analyzing your products and order history. This usually takes 2–5 minutes.
-        </p>
-        <progress id="scan-progress" value="0" max="100" style={{ width: "100%", height: 20, borderRadius: 8 }}></progress>
-        <p id="scan-text" style={{ textAlign: "center", marginTop: 8, color: "#6d7175" }}>Starting scan...</p>
-        {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
-      </div>
+      <s-page heading="Scanning Your Store">
+        <s-section>
+          <s-card padding="base">
+            <s-flex gap="base" direction="column" align="center">
+              <s-text size="large" variant="strong" style={{ marginBottom: 8 }}>
+                We're analyzing your products and orders
+              </s-text>
+              <s-text size="small" color="subdued" style={{ marginBottom: 16 }}>
+                This usually takes 2–5 minutes depending on catalog size
+              </s-text>
+              <progress
+                id="scan-progress"
+                value="0"
+                max="100"
+                style={{
+                  width: "100%", height: 12, borderRadius: 6,
+                  accentColor: "#008060",
+                }}
+              ></progress>
+              <s-text id="scan-text" size="small" color="subdued">
+                Starting scan...
+              </s-text>
+            </s-flex>
+          </s-card>
+        </s-section>
+        {error && (
+          <s-section>
+            <s-banner status="critical">{error}</s-banner>
+          </s-section>
+        )}
+      </s-page>
     );
   }
 
   return (
-    <div style={{ padding: "24px", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24 }}>Welcome to Dead Stock Finder</h1>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Choose your detection threshold</h2>
-        <p style={{ marginBottom: 16, color: "#6d7175" }}>
+    <s-page heading="Welcome to Dead Stock Finder">
+      <s-section heading="Choose your detection threshold">
+        <s-paragraph>
           Dead Stock Finder will flag any product that hasn't sold within your chosen time window.
           You can change this at any time from Settings.
-        </p>
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", marginBottom: 12, cursor: "pointer", padding: 12, border: "1px solid #d2d5d8", borderRadius: 8 }}>
-            <input type="radio" name="threshold" value="30" onChange={(e) => setThreshold(30)} />
-            <strong style={{ marginLeft: 8 }}>30 days</strong>
-            <span style={{ marginLeft: 4, color: "#6d7175" }}>— For fast-moving consumer goods</span>
-          </label>
-          <label style={{ display: "block", marginBottom: 12, cursor: "pointer", padding: 12, border: "1px solid #008060", borderRadius: 8, backgroundColor: "#f1f8f5" }}>
-            <input type="radio" name="threshold" value="60" defaultChecked onChange={(e) => setThreshold(60)} />
-            <strong style={{ marginLeft: 8 }}>60 days</strong>
-            <span style={{ marginLeft: 4, color: "#6d7175" }}>— Recommended for most stores</span>
-          </label>
-          <label style={{ display: "block", marginBottom: 12, cursor: "pointer", padding: 12, border: "1px solid #d2d5d8", borderRadius: 8 }}>
-            <input type="radio" name="threshold" value="90" onChange={(e) => setThreshold(90)} />
-            <strong style={{ marginLeft: 8 }}>90 days</strong>
-            <span style={{ marginLeft: 4, color: "#6d7175" }}>— For seasonal or slow-moving inventory</span>
-          </label>
-        </div>
-        {error && <p style={{ color: "red", marginBottom: 12 }}>{error}</p>}
-        <button
-          type="button"
+        </s-paragraph>
+        <s-flex gap="base" direction="column" style={{ marginTop: 16 }}>
+          {[
+            { value: 30, label: "30 days", desc: "For fast-moving consumer goods" },
+            { value: 60, label: "60 days", desc: "Recommended for most stores" },
+            { value: 90, label: "90 days", desc: "For seasonal or slow-moving inventory" },
+          ].map((opt) => (
+            <s-card
+              key={opt.value}
+              padding="base"
+              onClick={() => setThreshold(opt.value)}
+              style={{
+                cursor: "pointer",
+                border: threshold === opt.value ? "2px solid #008060" : "2px solid transparent",
+                backgroundColor: threshold === opt.value ? "#f1f8f5" : undefined,
+              }}
+            >
+              <s-flex gap="base" align="center">
+                <input
+                  type="radio"
+                  name="threshold"
+                  value={opt.value}
+                  checked={threshold === opt.value}
+                  onChange={() => setThreshold(opt.value)}
+                  style={{ margin: 0 }}
+                />
+                <s-flex direction="column" gap="none">
+                  <s-text variant="strong">{opt.label}</s-text>
+                  <s-text size="small" color="subdued">{opt.desc}</s-text>
+                </s-flex>
+              </s-flex>
+            </s-card>
+          ))}
+        </s-flex>
+      </s-section>
+
+      {error && (
+        <s-section>
+          <s-banner status="critical">{error}</s-banner>
+        </s-section>
+      )}
+
+      <s-section>
+        <s-button
+          variant="primary"
           onClick={async () => {
             setScanning(true);
             setError(null);
@@ -108,12 +152,11 @@ export default function Onboarding() {
               setScanning(false);
             }
           }}
-          style={{ padding: "10px 24px", fontSize: 14, fontWeight: 500, color: "#fff", backgroundColor: "#008060", border: "none", borderRadius: 6, cursor: "pointer" }}
         >
           Start Scanning
-        </button>
-      </div>
-    </div>
+        </s-button>
+      </s-section>
+    </s-page>
   );
 }
 
