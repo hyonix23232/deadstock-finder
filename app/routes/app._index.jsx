@@ -14,10 +14,6 @@ export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
 
-  if (!store.onboardingDone) {
-    throw new Response(null, { status: 302, headers: { Location: "/app/onboarding" } });
-  }
-
   const needsScan = !store.lastScanAt ||
     (Date.now() - new Date(store.lastScanAt).getTime()) > 24 * 60 * 60 * 1000;
 

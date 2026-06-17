@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData, useRouteError } from "react-router";
+import { Outlet, useLoaderData, useRouteError, redirect } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate } from "../shopify.server";
@@ -7,11 +7,14 @@ import { getOrCreateStore } from "../services/store.server";
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", onboardingDone: store.onboardingDone };
+  if (!store.onboardingDone) {
+    throw redirect("/app/onboarding");
+  }
+  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
 
 export default function App() {
-  const { apiKey, onboardingDone } = useLoaderData();
+  const { apiKey } = useLoaderData();
 
   return (
     <AppProvider embedded apiKey={apiKey}>
