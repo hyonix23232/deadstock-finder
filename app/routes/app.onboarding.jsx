@@ -1,14 +1,10 @@
-import { redirect, useLoaderData, useNavigate } from "react-router";
+import { useLoaderData, useNavigate, redirect } from "react-router";
 import { useEffect, useState } from "react";
-import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { authenticate } from "../shopify.server";
-import { getOrCreateStore } from "../services/store.server";
-import { scanStore } from "../services/scanner.server";
-import { detectDeadStock } from "../services/detection.server";
-import prisma from "../db.server";
 
 export const loader = async ({ request }) => {
+  const { authenticate } = await import("../shopify.server");
+  const { getOrCreateStore } = await import("../services/store.server");
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
 
@@ -135,6 +131,7 @@ export default function Onboarding() {
   );
 }
 
-export const headers = (headersArgs) => {
+export const headers = async (headersArgs) => {
+  const { boundary } = await import("@shopify/shopify-app-react-router/server");
   return boundary.headers(headersArgs);
 };
