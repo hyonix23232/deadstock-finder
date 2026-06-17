@@ -1,6 +1,5 @@
 import { useLoaderData, useNavigate, redirect } from "react-router";
 import { useEffect, useState } from "react";
-import { useAppBridge } from "@shopify/app-bridge-react";
 
 export const loader = async ({ request }) => {
   const { authenticate } = await import("../shopify.server");
@@ -25,7 +24,6 @@ export default function Onboarding() {
   const [scanning, setScanning] = useState(false);
   const [threshold, setThreshold] = useState(initialThreshold || 60);
   const [error, setError] = useState(null);
-  const shopify = useAppBridge();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,13 +93,9 @@ export default function Onboarding() {
             setScanning(true);
             setError(null);
             try {
-              const token = await shopify.idToken();
               const res = await fetch("/app/onboarding/scan", {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ threshold }),
               });
               if (!res.ok) {
