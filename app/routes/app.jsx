@@ -1,4 +1,5 @@
-import { Outlet, useLoaderData, useRouteError, redirect } from "react-router";
+import { Outlet, useLoaderData, useRouteError, useNavigate, redirect } from "react-router";
+import { useEffect } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate } from "../shopify.server";
@@ -9,23 +10,28 @@ export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
 
-  if (!store.onboardingDone && !url.pathname.includes("/onboarding")) {
-    const shop = url.searchParams.get("shop") || session.shop;
-    const host = url.searchParams.get("host");
-    const locale = url.searchParams.get("locale") || "en-US";
-    const params = new URLSearchParams({
-      shop,
-      host,
-      embedded: "1",
-      locale,
-    });
-    throw redirect(`/app/onboarding?${params.toString()}`);
-  }
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  const shop = url.searchParams.get("shop") || session.shop;
+  const host = url.searchParams.get("host");
+  const locale = url.searchParams.get("locale") || "en-US";
+
+  return {
+    apiKey: process.env.SHOPIFY_API_KEY || "",
+    onboardingRequired: !store.onboardingDone && !url.pathname.includes("/onboarding"),
+    onboardingParams: new URLSearchParams({ shop, host, embedded: "1", locale }).toString(),
+  };
 };
 
 export default function App() {
-  const { apiKey } = useLoaderData();
+  const { apiKey, onboardingRequired, onboardingParams } = useLoaderData();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (onboardingRequired) {
+      navigate(`/app/onboarding?${onboardingParams}`, { replace: true });
+    }
+  }, [onboardingRequired, onboardingParams, navigate]);
+
+  if (onboardingRequired) return null;
 
   return (
     <AppProvider embedded apiKey={apiKey}>
