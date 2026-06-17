@@ -1,10 +1,10 @@
-import { authenticate } from "../shopify.server";
-import { getOrCreateStore } from "../services/store.server";
-import { scanStore } from "../services/scanner.server";
-import { detectDeadStock } from "../services/detection.server";
-import prisma from "../db.server";
-
 export const action = async ({ request }) => {
+  const { authenticate } = await import("../shopify.server");
+  const { default: prisma } = await import("../db.server");
+  const { getOrCreateStore } = await import("../services/store.server");
+  const { scanStore } = await import("../services/scanner.server");
+  const { detectDeadStock } = await import("../services/detection.server");
+
   try {
     const { session, admin } = await authenticate.admin(request);
     const { threshold } = await request.json();
@@ -34,3 +34,7 @@ export const action = async ({ request }) => {
     });
   }
 };
+
+export default function Scan() {
+  return null;
+}
