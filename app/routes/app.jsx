@@ -8,7 +8,8 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const { session } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
-  if (!store.onboardingDone) {
+
+  if (!store.onboardingDone && !url.pathname.includes("/onboarding")) {
     const shop = url.searchParams.get("shop") || session.shop;
     const host = url.searchParams.get("host");
     const locale = url.searchParams.get("locale") || "en-US";

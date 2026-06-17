@@ -12,7 +12,12 @@ export const loader = async ({ request }) => {
   const store = await getOrCreateStore(session.shop);
 
   if (store.onboardingDone) {
-    return redirect("/app");
+    const url = new URL(request.url);
+    const shop = url.searchParams.get("shop") || session.shop;
+    const host = url.searchParams.get("host");
+    const locale = url.searchParams.get("locale") || "en-US";
+    const params = new URLSearchParams({ shop, host, embedded: "1", locale });
+    return redirect(`/app?${params.toString()}`);
   }
 
   return { threshold: store.threshold };
@@ -37,7 +42,12 @@ export const action = async ({ request }) => {
     data: { scanStatus: "completed", scanProgress: 100 },
   });
 
-  return redirect("/app");
+  const url = new URL(request.url);
+  const shop = url.searchParams.get("shop") || session.shop;
+  const host = url.searchParams.get("host");
+  const locale = url.searchParams.get("locale") || "en-US";
+  const params = new URLSearchParams({ shop, host, embedded: "1", locale });
+  return redirect(`/app?${params.toString()}`);
 };
 
 export default function Onboarding() {
