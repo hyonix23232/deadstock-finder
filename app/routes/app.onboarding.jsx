@@ -20,29 +20,11 @@ export const loader = async ({ request }) => {
   return { threshold: store.threshold };
 };
 
-async function handleStart(threshold, token, navigate) {
-  const params = new URLSearchParams(window.location.search);
-  params.set("threshold", threshold);
-
-  const res = await fetch("/app/onboarding/scan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ threshold }),
-  });
-
-  if (res.ok) {
-    const search = window.location.search;
-    window.location.href = `/app?${search}`;
-  }
-}
-
 export default function Onboarding() {
   const { threshold: initialThreshold } = useLoaderData();
   const [scanning, setScanning] = useState(false);
   const [threshold, setThreshold] = useState(initialThreshold || 60);
+  const [error, setError] = useState(null);
   const shopify = useAppBridge();
   const navigate = useNavigate();
 
@@ -75,6 +57,7 @@ export default function Onboarding() {
         </p>
         <progress id="scan-progress" value="0" max="100" style={{ width: "100%", height: 20, borderRadius: 8 }}></progress>
         <p id="scan-text" style={{ textAlign: "center", marginTop: 8, color: "#6d7175" }}>Starting scan...</p>
+        {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
       </div>
     );
   }
@@ -105,20 +88,29 @@ export default function Onboarding() {
             <span style={{ marginLeft: 4, color: "#6d7175" }}>— For seasonal or slow-moving inventory</span>
           </label>
         </div>
+        {error && <p style={{ color: "red", marginBottom: 12 }}>{error}</p>}
         <button
           type="button"
           onClick={async () => {
             setScanning(true);
-            const token = await shopify.getSessionToken();
-            const res = await fetch("/app/onboarding/scan", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ threshold }),
-            });
-            if (!res.ok) {
+            setError(null);
+            try {
+              const token = await shopify.getSessionToken();
+              const res = await fetch("/app/onboarding/scan", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ threshold }),
+              });
+              if (!res.ok) {
+                const err = await res.text();
+                setError(`Scan failed (${res.status}): ${err}`);
+                setScanning(false);
+              }
+            } catch (err) {
+              setError(err.message || String(err));
               setScanning(false);
             }
           }}
