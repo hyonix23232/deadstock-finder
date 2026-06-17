@@ -1,6 +1,5 @@
 import { useLoaderData, useFetcher } from "react-router";
-import { useAppBridge } from "@shopify/app-bridge-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, ChoiceList, DataTable, Badge } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
@@ -77,17 +76,17 @@ export const action = async ({ request }) => {
 
 export default function Settings() {
   const { store, excludedProducts, canEmail, canBulk, currentPlan, billingPlans } = useLoaderData();
-  const shopify = useAppBridge();
   const fetcher = useFetcher();
+  const [threshold, setThreshold] = useState(String(store.threshold));
 
   useEffect(() => {
     if (fetcher.data?.ok) {
-      shopify.toast.show(fetcher.data.message);
+      window.shopify?.toast?.show?.(fetcher.data.message);
     }
     if (fetcher.data?.confirmationUrl) {
       window.open(fetcher.data.confirmationUrl, "_top");
     }
-  }, [fetcher.data, shopify]);
+  }, [fetcher.data]);
 
   const planBadge = {
     free: { tone: "info" },
@@ -116,8 +115,8 @@ export default function Settings() {
                     { label: "60 days (Recommended)", value: "60" },
                     { label: "90 days", value: "90" },
                   ]}
-                  selected={[String(store.threshold)]}
-                  onChange={() => {}}
+                  selected={[threshold]}
+                  onChange={([val]) => setThreshold(val)}
                 />
                 <Button variant="primary" size="slim" submit>Save</Button>
               </BlockStack>
