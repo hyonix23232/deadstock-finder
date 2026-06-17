@@ -1,14 +1,12 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "0ee5bf03b521435b4583728b6d15a660"
-application_url = "https://example.com"
+application_url = "https://lucky-serenity-production-2d99.up.railway.app"
 embedded = true
 name = "Dead Stock Finder"
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
-optional_scopes = [ ]
+scopes = "read_products,write_products,read_orders,read_customers"
 use_legacy_install_flow = false
 
 [webhooks]
@@ -35,4 +33,4 @@ api_version = "2026-04"
   compliance_topics = [ "shop/redact" ]
 
 [auth]
-redirect_urls = [ ]
+redirect_urls = [ "https://lucky-serenity-production-2d99.up.railway.app/auth" ]

@@ -3,9 +3,16 @@ import { login } from "../../shopify.server";
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
+  const shop = url.searchParams.get("shop");
 
-  if (url.searchParams.get("shop")) {
-    throw redirect(`/app?${url.searchParams.toString()}`);
+  // Embedded OAuth callback — has id_token, handled by auth route
+  if (shop && url.searchParams.get("embedded")) {
+    throw redirect(`/auth?${url.searchParams.toString()}`);
+  }
+
+  // Non-embedded initial login — redirect to auth flow
+  if (shop) {
+    throw redirect(`/auth?shop=${shop}`);
   }
 
   return { showForm: Boolean(login) };

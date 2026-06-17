@@ -1,13 +1,11 @@
 import prisma from "../db.server";
 
 export async function getOrCreateStore(shop) {
-  let store = await prisma.store.findUnique({ where: { shop } });
-  if (!store) {
-    store = await prisma.store.create({
-      data: { shop },
-    });
-  }
-  return store;
+  return prisma.store.upsert({
+    where: { shop },
+    update: {},
+    create: { shop },
+  });
 }
 
 export async function updateStorePlan(shop, plan) {

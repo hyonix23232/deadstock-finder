@@ -6,12 +6,12 @@ export const action = async ({ request }) => {
 
   console.log(`Received ${topic} webhook for ${shop}`);
 
+  await db.deadStockEntry.deleteMany({ where: { shop } });
+  await db.excludedProduct.deleteMany({ where: { shop } });
+  await db.product.deleteMany({ where: { shop } });
+  await db.scanHistory.deleteMany({ where: { shop } });
+  await db.store.deleteMany({ where: { shop } });
   if (session) {
-    await db.deadStockEntry.deleteMany({ where: { shop } });
-    await db.excludedProduct.deleteMany({ where: { shop } });
-    await db.product.deleteMany({ where: { shop } });
-    await db.scanHistory.deleteMany({ where: { shop } });
-    await db.store.deleteMany({ where: { shop } });
     await db.session.deleteMany({ where: { shop } });
   }
 
