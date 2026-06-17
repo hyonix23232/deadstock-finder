@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher, useNavigate } from "react-router";
+import { useLoaderData, useFetcher, redirect } from "react-router";
 import { useEffect, useState, useCallback } from "react";
 
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -16,13 +16,11 @@ export const loader = async ({ request }) => {
   const store = await getOrCreateStore(session.shop);
 
   const url = new URL(request.url);
-  const shop = url.searchParams.get("shop") || session.shop;
-  const host = url.searchParams.get("host");
-  const locale = url.searchParams.get("locale") || "en-US";
-  const onboardingParams = new URLSearchParams({ shop, host, embedded: "1", locale }).toString();
-
   if (!store.onboardingDone) {
-    return { needsOnboarding: true, onboardingParams, stats: null, deadStock: [], plan: "free", canBulk: false, needsScan: false };
+    const shop = url.searchParams.get("shop") || session.shop;
+    const host = url.searchParams.get("host");
+    const locale = url.searchParams.get("locale") || "en-US";
+    return redirect(`/app/onboarding?${new URLSearchParams({ shop, host, embedded: "1", locale }).toString()}`);
   }
 
   const needsScan = !store.lastScanAt ||
@@ -62,7 +60,7 @@ export const loader = async ({ request }) => {
       : b.daysSinceSale - a.daysSinceSale);
   }
 
-  return { needsOnboarding: false, onboardingParams: "", stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan };
+  return { stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan };
 };
 
 export const action = async ({ request }) => {
@@ -127,22 +125,13 @@ function BadgeForAction({ action, data }) {
 }
 
 export default function Dashboard() {
-  const { needsOnboarding, onboardingParams, stats, deadStock, plan, canBulk, needsScan } = useLoaderData();
-  const navigate = useNavigate();
+  const { stats, deadStock, plan, canBulk, needsScan } = useLoaderData();
   const fetcher = useFetcher();
   const [selected, setSelected] = useState(new Set());
   const [sortBy, setSortBy] = useState("days");
   const [order, setOrder] = useState("desc");
   const [filter, setFilter] = useState("all");
   const [initialScanning, setInitialScanning] = useState(needsScan && stats && !stats.lastScanAt);
-
-  useEffect(() => {
-    if (needsOnboarding) {
-      navigate(`/app/onboarding?${onboardingParams}`, { replace: true });
-    }
-  }, [needsOnboarding, onboardingParams, navigate]);
-
-  if (needsOnboarding) return null;
 
   const toggleSelect = (id) => {
     const next = new Set(selected);
