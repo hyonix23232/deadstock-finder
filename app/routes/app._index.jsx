@@ -1,6 +1,6 @@
 import { useLoaderData, useFetcher, useNavigate } from "react-router";
 import { useEffect, useState, useCallback } from "react";
-import { useAppBridge } from "@shopify/app-bridge-react";
+
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, Badge, ProgressBar, DataTable, ChoiceList, Select, EmptyState } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
@@ -129,7 +129,6 @@ function BadgeForAction({ action, data }) {
 export default function Dashboard() {
   const { needsOnboarding, onboardingParams, stats, deadStock, plan, canBulk, needsScan } = useLoaderData();
   const navigate = useNavigate();
-  const shopify = useAppBridge();
   const fetcher = useFetcher();
   const [selected, setSelected] = useState(new Set());
   const [sortBy, setSortBy] = useState("days");
@@ -158,9 +157,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (fetcher.data && fetcher.state === "idle") {
-      shopify.toast.show("Action completed");
+      if (typeof window !== "undefined" && window.shopify?.toast) {
+        window.shopify.toast.show("Action completed");
+      }
     }
-  }, [fetcher.data, fetcher.state, shopify]);
+  }, [fetcher.data, fetcher.state]);
 
   useEffect(() => {
     if (!initialScanning) return;
@@ -256,7 +257,7 @@ export default function Dashboard() {
         <Button
           variant="tertiary"
           size="slim"
-          onClick={() => shopify.toast.show(`Apply ${suggestedData.percentage || 20}% discount to ${entry.product.title}`)}
+          onClick={() => window.shopify?.toast?.show?.(`Apply ${suggestedData.percentage || 20}% discount to ${entry.product.title}`)}
         >
           Apply
         </Button>
