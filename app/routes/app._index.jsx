@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher, Navigate } from "react-router";
+import { useLoaderData, useFetcher, useNavigate, Navigate } from "react-router";
 import { useEffect, useState, useCallback } from "react";
 
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -131,6 +131,7 @@ export default function Dashboard() {
   if (redirectTo) {
     return <Navigate to={redirectTo} replace />;
   }
+  const navigate = useNavigate();
   const [selected, setSelected] = useState(new Set());
   const [sortBy, setSortBy] = useState("days");
   const [order, setOrder] = useState("desc");
@@ -371,7 +372,7 @@ export default function Dashboard() {
               <EmptyState
                 heading="No dead stock found"
                 image={null}
-                action={{ content: "Adjust threshold", url: "/app/settings" }}
+                action={{ content: "Adjust threshold", onAction: () => navigate("/app/settings") }}
               >
                 <Text variant="bodyMd" as="p" tone="subdued">
                   Your inventory looks healthy! All products have sold within your detection threshold. You can adjust the threshold in settings if needed.
