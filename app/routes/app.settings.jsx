@@ -74,29 +74,19 @@ export const action = async ({ request }) => {
   return { ok: false };
 };
 
-const planFeatures = {
-  free: [
-    { label: "50 products", included: true },
-    { label: "Email alerts", included: false },
-    { label: "Bulk actions", included: false },
-    { label: "Reports & export", included: false },
-    { label: "7-day free trial", included: false },
-  ],
-  starter: [
-    { label: "500 products", included: true },
-    { label: "Email alerts", included: true },
-    { label: "Bulk actions", included: true },
-    { label: "Reports & export", included: false },
-    { label: "7-day free trial", included: false },
-  ],
-  pro: [
-    { label: "Unlimited products", included: true },
-    { label: "Email alerts", included: true },
-    { label: "Bulk actions", included: true },
-    { label: "Reports & export", included: true },
-    { label: "7-day free trial", included: true },
-  ],
+const PLAN_META = {
+  free: { label: "Free", price: "$0", color: "var(--p-color-border)", badge: "info" },
+  starter: { label: "Starter", price: "$15/mo", color: "var(--p-color-border-info)", badge: "success" },
+  pro: { label: "Pro", price: "$29/mo", color: "var(--p-color-border-success)", badge: "success" },
 };
+
+const ALL_PLAN_FEATURES = [
+  { key: "products", free: "50 products scanned", starter: "500 products scanned", pro: "Unlimited products" },
+  { key: "email", free: "Email alerts", starter: "Email alerts", pro: "Email alerts" },
+  { key: "bulk", free: "Bulk actions", starter: "Bulk actions", pro: "Bulk actions" },
+  { key: "reports", free: "Reports & export", starter: "Reports & export", pro: "Reports & export" },
+  { key: "trial", free: "7-day free trial", starter: "7-day free trial", pro: "7-day free trial" },
+];
 
 export default function Settings() {
   const { store, excludedProducts, canEmail, canBulk, currentPlan, billingPlans } = useLoaderData();
@@ -112,99 +102,108 @@ export default function Settings() {
     }
   }, [fetcher.data]);
 
-  const planBadgeTone = {
-    free: "info", starter: "success", pro: "success",
-  }[currentPlan] || "info";
-
-  const features = planFeatures[currentPlan] || planFeatures.free;
-
-  const planDisplayName = currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
-
   return (
     <Page title="Settings">
       <BlockStack gap="400">
-        <InlineStack gap="300" wrap={false}>
-          <div style={{ flex: 2, minWidth: 300 }}>
-            <Card>
-              <BlockStack gap="400">
-                <Text variant="headingMd" as="h2">Detection Threshold</Text>
-                <Text variant="bodySm" as="p" tone="subdued">
-                  Products without a sale in this many days are flagged as dead stock.
-                </Text>
-                <fetcher.Form method="post">
-                  <input type="hidden" name="intent" value="update-threshold" />
-                  <BlockStack gap="300">
-                    <ChoiceList
-                      title="Threshold"
-                      titleHidden
-                      name="threshold"
-                      choices={[
-                        { label: "30 days — Aggressive detection", value: "30" },
-                        { label: "60 days — Recommended", value: "60" },
-                        { label: "90 days — Lenient detection", value: "90" },
-                      ]}
-                      selected={[threshold]}
-                      onChange={([val]) => setThreshold(val)}
-                    />
-                    <Box>
-                      <Button variant="primary" submit>Save threshold</Button>
-                    </Box>
-                  </BlockStack>
-                </fetcher.Form>
-              </BlockStack>
-            </Card>
-          </div>
-
-          <div style={{ flex: 1, minWidth: 250 }}>
-            <Card>
+        <Card>
+          <BlockStack gap="400">
+            <Text variant="headingMd" as="h2">Detection Threshold</Text>
+            <Text variant="bodySm" as="p" tone="subdued">
+              Products without a sale in this many days are flagged as dead stock.
+            </Text>
+            <fetcher.Form method="post">
+              <input type="hidden" name="intent" value="update-threshold" />
               <BlockStack gap="300">
-                <InlineStack align="space-between" blockAlign="center">
-                  <Text variant="headingMd" as="h2">Plan</Text>
-                  <Badge tone={planBadgeTone}>{planDisplayName}</Badge>
-                </InlineStack>
-
-                <BlockStack gap="200">
-                  {features.map((f) => (
-                    <InlineStack key={f.label} gap="200" blockAlign="center">
-                      <Text variant="bodyMd" as="span" tone={f.included ? undefined : "critical"}>
-                        {f.included ? "✓" : "✕"} {f.label}
-                      </Text>
-                    </InlineStack>
-                  ))}
-                </BlockStack>
-
-                <Box borderWidth="025" borderColor="border" padding="300" borderRadius="200">
-                  <BlockStack gap="200">
-                    {currentPlan === "free" && (
-                      <>
-                        <fetcher.Form method="post">
-                          <input type="hidden" name="intent" value="subscribe" />
-                          <input type="hidden" name="plan" value="Starter" />
-                          <Button variant="primary" submit fullWidth>Upgrade to Starter — $15/mo</Button>
-                        </fetcher.Form>
-                        <fetcher.Form method="post">
-                          <input type="hidden" name="intent" value="subscribe" />
-                          <input type="hidden" name="plan" value="Pro" />
-                          <Button variant="secondary" submit fullWidth>Upgrade to Pro — $29/mo (7-day trial)</Button>
-                        </fetcher.Form>
-                      </>
-                    )}
-                    {currentPlan === "starter" && (
-                      <fetcher.Form method="post">
-                        <input type="hidden" name="intent" value="subscribe" />
-                        <input type="hidden" name="plan" value="Pro" />
-                        <Button variant="primary" submit fullWidth>Upgrade to Pro — $29/mo (7-day trial)</Button>
-                      </fetcher.Form>
-                    )}
-                    {currentPlan === "pro" && (
-                      <Text variant="bodyMd" tone="success" as="p" fontWeight="bold">Current plan — all features active</Text>
-                    )}
-                  </BlockStack>
+                <ChoiceList
+                  title="Threshold"
+                  titleHidden
+                  name="threshold"
+                  choices={[
+                    { label: "30 days — Aggressive detection", value: "30" },
+                    { label: "60 days — Recommended", value: "60" },
+                    { label: "90 days — Lenient detection", value: "90" },
+                  ]}
+                  selected={[threshold]}
+                  onChange={([val]) => setThreshold(val)}
+                />
+                <Box>
+                  <Button variant="primary" submit>Save threshold</Button>
                 </Box>
               </BlockStack>
-            </Card>
-          </div>
-        </InlineStack>
+            </fetcher.Form>
+          </BlockStack>
+        </Card>
+
+        <Card>
+          <BlockStack gap="400">
+            <Text variant="headingMd" as="h2">Compare Plans</Text>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              {["free", "starter", "pro"].map((planKey) => {
+                const meta = PLAN_META[planKey];
+                const isCurrent = planKey === currentPlan;
+                const planOrder = ["free", "starter", "pro"];
+                const isUpgrade = planOrder.indexOf(planKey) > planOrder.indexOf(currentPlan);
+                const features = ["products", "email", "bulk", "reports", "trial"];
+                const included = {
+                  free: [true, false, false, false, false],
+                  starter: [true, true, true, false, false],
+                  pro: [true, true, true, true, true],
+                };
+                return (
+                  <div key={planKey} style={{
+                    flex: 1,
+                    minWidth: 200,
+                    border: `2px solid ${isCurrent ? "var(--p-color-border-success)" : "var(--p-color-border)"}`,
+                    borderRadius: 12,
+                    padding: 20,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 16,
+                    position: "relative",
+                    background: isCurrent ? "var(--p-color-bg-success-subdued)" : undefined,
+                  }}>
+                    {isCurrent && (
+                      <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)" }}>
+                        <Badge tone="success">Current Plan</Badge>
+                      </div>
+                    )}
+                    <div style={{ textAlign: "center", paddingTop: isCurrent ? 4 : 0 }}>
+                      <Text variant="headingLg" as="h3" alignment="center">{meta.label}</Text>
+                      <Text variant="headingXl" as="p" alignment="center" tone={planKey === "free" ? "subdued" : "success"}>
+                        {meta.price}
+                      </Text>
+                    </div>
+                    <div style={{ borderTop: "1px solid var(--p-color-border)", paddingTop: 12 }}>
+                      {features.map((feat, i) => {
+                        const label = ALL_PLAN_FEATURES.find(f => f.key === feat)[planKey];
+                        const incl = included[planKey][i];
+                        return (
+                          <div key={feat} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
+                            <Text variant="bodyMd" as="span" tone={incl ? "success" : "critical"}>
+                              {incl ? "✓" : "✕"}
+                            </Text>
+                            <Text variant="bodyMd" as="span" tone={incl ? undefined : "subdued"}>
+                              {label}
+                            </Text>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ marginTop: "auto" }}>
+                      {!isCurrent && isUpgrade && (
+                        <fetcher.Form method="post">
+                          <input type="hidden" name="intent" value="subscribe" />
+                          <input type="hidden" name="plan" value={meta.label} />
+                          <Button variant="primary" submit fullWidth>Upgrade to {meta.label}</Button>
+                        </fetcher.Form>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </BlockStack>
+        </Card>
 
         <Card>
           <BlockStack gap="300">
