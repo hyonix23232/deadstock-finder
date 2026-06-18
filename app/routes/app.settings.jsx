@@ -102,6 +102,7 @@ const ALL_PLAN_FEATURES = [
 
 export default function Settings() {
   const { store, excludedProducts, canEmail, canBulk, currentPlan, billingPlans } = useLoaderData();
+  const fetcher = useFetcher();
   const subscribeFetcher = useFetcher();
   const [threshold, setThreshold] = useState(String(store.threshold));
 
