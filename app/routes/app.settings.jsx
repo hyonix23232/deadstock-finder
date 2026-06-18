@@ -166,8 +166,8 @@ export default function Settings() {
                 <BlockStack gap="200">
                   {features.map((f) => (
                     <InlineStack key={f.label} gap="200" blockAlign="center">
-                      <Text variant="bodyMd" as="span" tone={f.included ? undefined : "subdued"}>
-                        {f.included ? "✓" : "—"} {f.label}
+                      <Text variant="bodyMd" as="span" tone={f.included ? undefined : "critical"}>
+                        {f.included ? "✓" : "✕"} {f.label}
                       </Text>
                     </InlineStack>
                   ))}
