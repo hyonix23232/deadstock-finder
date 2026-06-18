@@ -31,6 +31,9 @@ export default function Onboarding() {
   const [scanning, setScanning] = useState(false);
   const [threshold, setThreshold] = useState(initialThreshold || 60);
   const [error, setError] = useState(null);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanCurrent, setScanCurrent] = useState(0);
+  const [scanTotal, setScanTotal] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,10 +42,9 @@ export default function Onboarding() {
       try {
         const res = await fetch("/app/scan-status");
         const data = await res.json();
-        const progressEl = document.getElementById("scan-progress");
-        if (progressEl) progressEl.value = data.scanProgress || 0;
-        const textEl = document.getElementById("scan-text");
-        if (textEl) textEl.textContent = `Scanning your catalog... ${data.scanProgress || 0}%`;
+        setScanProgress(data.scanProgress || 0);
+        setScanCurrent(data.scanCurrentProduct || 0);
+        setScanTotal(data.scanTotalProducts || 0);
         if (data.scanStatus === "completed") {
           clearInterval(interval);
           const search = window.location.search;
@@ -85,13 +87,14 @@ export default function Onboarding() {
               This usually takes 2–5 minutes depending on catalog size
             </Text>
             <ProgressBar
-              id="scan-progress"
-              progress={0}
+              progress={scanProgress}
               size="large"
               color="success"
             />
-            <Text id="scan-text" variant="bodySm" as="p" tone="subdued" alignment="center">
-              Starting scan...
+            <Text variant="bodySm" as="p" tone="subdued" alignment="center">
+              {scanTotal > 0
+                ? `Scanning ${scanCurrent} of ${scanTotal} products... ${scanProgress}% complete`
+                : `Analyzing your catalog... ${scanProgress}%`}
             </Text>
           </BlockStack>
         </Card>

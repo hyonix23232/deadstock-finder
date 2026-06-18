@@ -25,7 +25,7 @@ export async function sendWeeklyEmail(shop) {
     (sum, e) => sum + e.product.price * e.product.inventoryCount, 0
   );
 
-  const transporter = getTransporter();
+  const transporter = await getTransporter();
   if (!transporter) return;
 
   const emailContent = {
@@ -43,7 +43,7 @@ export async function sendWeeklyEmail(shop) {
   }
 }
 
-function getTransporter() {
+async function getTransporter() {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     return null;
   }

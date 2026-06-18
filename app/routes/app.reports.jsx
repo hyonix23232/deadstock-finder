@@ -1,6 +1,6 @@
 import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, DataTable, Badge } from "@shopify/polaris";
+import { Page, Card, Text, BlockStack, InlineStack, Button, Banner, DataTable, Badge, Box } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { hasFeature } from "../services/billing.server";
@@ -67,10 +67,16 @@ export default function Reports() {
 
   const { scanHistory, deadStockHistory, stats } = data;
 
+  const statColor = {
+    "Total Scans": "var(--p-color-border-info)",
+    "Dead Stock Found": "var(--p-color-border-critical)",
+    "Resolved": "var(--p-color-border-success)",
+  };
+
   const statCards = [
-    { label: "Total Scans", value: stats.totalScans },
-    { label: "Dead Stock Found", value: stats.totalDeadStockDetected },
-    { label: "Resolved", value: stats.totalResolved },
+    { label: "Total Scans", value: stats.totalScans, tone: undefined },
+    { label: "Dead Stock Found", value: stats.totalDeadStockDetected, tone: stats.totalDeadStockDetected > 0 ? "critical" : "success" },
+    { label: "Resolved", value: stats.totalResolved, tone: stats.totalResolved > 0 ? "success" : "subdued" },
   ];
 
   const historyRows = deadStockHistory.map((entry) => [
@@ -82,39 +88,76 @@ export default function Reports() {
     </Badge>,
   ]);
 
+  const scanRows = scanHistory.map((scan) => [
+    new Date(scan.startedAt).toLocaleDateString(),
+    new Date(scan.startedAt).toLocaleTimeString(),
+    scan.productCount || "-",
+    scan.status === "completed"
+      ? <Badge tone="success">Completed</Badge>
+      : scan.status === "failed"
+      ? <Badge tone="critical">Failed</Badge>
+      : <Badge tone="attention">In progress</Badge>,
+  ]);
+
   return (
     <Page title="Reports">
       <BlockStack gap="400">
         <InlineStack gap="300" wrap={false}>
           {statCards.map((s) => (
-            <Card key={s.label} padding="300" style={{ flex: 1 }}>
-              <BlockStack gap="100">
-                <Text variant="bodySm" tone="subdued" as="span">{s.label}</Text>
-                <Text variant="headingXl" as="p">{s.value}</Text>
+            <div key={s.label} style={{ flex: 1, borderLeft: `4px solid ${statColor[s.label] || "transparent"}`, paddingLeft: 0 }}>
+              <Card padding="400">
+                <BlockStack gap="100">
+                  <Text variant="bodySm" tone="subdued" as="span">{s.label}</Text>
+                  <Text variant="headingXl" as="p" tone={s.tone}>{s.value}</Text>
+                </BlockStack>
+              </Card>
+            </div>
+          ))}
+        </InlineStack>
+
+        <InlineStack gap="300" wrap={false}>
+          <div style={{ flex: 1, minWidth: 300 }}>
+            <Card>
+              <BlockStack gap="300">
+                <Text variant="headingMd" as="h2">Scan History</Text>
+                {scanHistory.length === 0 ? (
+                  <Text variant="bodyMd" as="p" tone="subdued">No scans recorded yet.</Text>
+                ) : (
+                  <DataTable
+                    columnContentTypes={["text", "text", "numeric", "text"]}
+                    headings={["Date", "Time", "Products", "Status"]}
+                    rows={scanRows}
+                  />
+                )}
               </BlockStack>
             </Card>
-          ))}
+          </div>
+
+          <div style={{ flex: 2, minWidth: 400 }}>
+            <Card>
+              <BlockStack gap="300">
+                <Text variant="headingMd" as="h2">Dead Stock History</Text>
+                {deadStockHistory.length === 0 ? (
+                  <Text variant="bodyMd" as="p" tone="subdued">No dead stock history yet.</Text>
+                ) : (
+                  <DataTable
+                    columnContentTypes={["text", "text", "numeric", "text"]}
+                    headings={["Product", "Flagged", "Days", "Status"]}
+                    rows={historyRows}
+                  />
+                )}
+              </BlockStack>
+            </Card>
+          </div>
         </InlineStack>
 
         <Card>
           <BlockStack gap="300">
-            <Text variant="headingMd" as="h2">Recent Dead Stock History</Text>
-            {deadStockHistory.length === 0 ? (
-              <Text variant="bodyMd" as="p" tone="subdued">No dead stock history yet.</Text>
-            ) : (
-              <DataTable
-                columnContentTypes={["text", "text", "numeric", "text"]}
-                headings={["Product", "Flagged", "Days", "Status"]}
-                rows={historyRows}
-              />
-            )}
-          </BlockStack>
-        </Card>
-
-        <Card>
-          <BlockStack gap="300">
-            <Text variant="headingMd" as="h2">Export</Text>
-            <ButtonGroup>
+            <Text variant="headingMd" as="h2">Export Reports</Text>
+            <Text variant="bodySm" as="p" tone="subdued">
+              Download your dead stock data for external analysis or record keeping.
+            </Text>
+            <InlineStack gap="200">
               <Button
                 variant="secondary"
                 onClick={async () => {
@@ -145,7 +188,7 @@ export default function Reports() {
               >
                 Export as PDF
               </Button>
-            </ButtonGroup>
+            </InlineStack>
           </BlockStack>
         </Card>
       </BlockStack>

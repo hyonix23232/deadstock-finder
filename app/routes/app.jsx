@@ -9,6 +9,9 @@ const navStyle = {
   borderBottom: "1px solid #e1e3e5",
   background: "#fff",
   padding: "0 20px",
+  display: "flex",
+  justifyContent: "space-between",
+  flexWrap: "wrap",
 };
 
 const linkBase = {
@@ -41,7 +44,7 @@ export default function App() {
     <PolarisProvider i18n={enTranslations}>
       <AppProvider embedded apiKey={apiKey}>
         <div style={navStyle}>
-          <div style={{ display: "flex", gap: 0 }}>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
             <NavLink to="/app" end style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
               Dashboard
             </NavLink>
@@ -52,6 +55,9 @@ export default function App() {
               Reports
             </NavLink>
           </div>
+          <NavLink to="/app/privacy" style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+            Privacy
+          </NavLink>
         </div>
         <Outlet />
       </AppProvider>

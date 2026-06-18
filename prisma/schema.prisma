@@ -33,6 +33,8 @@ model Store {
   threshold         Int      @default(60)
   scanStatus        String   @default("pending")
   scanProgress      Int      @default(0)
+  scanCurrentProduct Int     @default(0)
+  scanTotalProducts  Int     @default(0)
   lastScanAt        DateTime?
   emailEnabled      Boolean  @default(false)
   onboardingDone    Boolean  @default(false)

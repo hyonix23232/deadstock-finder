@@ -78,19 +78,33 @@ function generateWhy(product, daysSince, lastOrder) {
     const daysSinceCreated = Math.floor(
       (Date.now() - new Date(product.createdAt).getTime()) / (1000 * 60 * 60 * 24)
     );
-    if (daysSinceCreated < 60) {
+    const monthsSinceCreated = Math.floor(daysSinceCreated / 30);
+    if (daysSinceCreated < 30) {
+      return `Never sold since added ${daysSinceCreated} days ago — may need promotion`;
+    }
+    if (daysSinceCreated < 90) {
       return `Never sold since added to store ${daysSinceCreated} days ago`;
     }
-    return `Never sold since added to store ${daysSinceCreated} days ago — consider archiving`;
+    return `Never sold since added ${monthsSinceCreated} months ago — consider archiving`;
   }
 
   if (product.totalSales > 0 && daysSince > 45) {
-    const prevDays = daysSince - 45;
-    return `Sold well until ${prevDays} days ago — may be seasonal`;
+    const stoppedSelling = daysSince;
+    if (stoppedSelling > 90) {
+      return `Sold well until ${stoppedSelling} days ago — may be seasonal or trending down`;
+    }
+    return `Last sold ${stoppedSelling} days ago — may be seasonal`;
   }
 
-  if (product.price > 50 && product.inventoryCount > 5) {
-    return `Had limited views but 0 purchases — price may be too high`;
+  if (product.totalSales <= 2 && daysSince > 30) {
+    if (product.price > 50) {
+      return `Only ${product.totalSales} sale(s) in ${daysSince} days — price may be too high for demand`;
+    }
+    return `Only ${product.totalSales} sale(s) in ${daysSince} days — low demand`;
+  }
+
+  if (daysSince > 120) {
+    return `No sales for ${Math.floor(daysSince / 30)} months — consider archiving or deep discount`;
   }
 
   return `Last sold ${daysSince} days ago`;

@@ -102,7 +102,7 @@ export async function scanStore(admin, shop) {
 
   const products = await fetchAllProducts(admin);
   const total = products.length;
-  await updateScanProgress(shop, "scanning", 5);
+  await updateScanProgress(shop, "scanning", 5, 0, total);
 
   const excludedIds = new Set(
     (await prisma.excludedProduct.findMany({ where: { shop }, select: { productId: true } })).map(e => e.productId)
@@ -111,7 +111,7 @@ export async function scanStore(admin, shop) {
   for (let i = 0; i < products.length; i++) {
     const p = products[i];
     const progress = 5 + Math.round(((i + 1) / total) * 85);
-    await updateScanProgress(shop, "scanning", progress);
+    await updateScanProgress(shop, "scanning", progress, i + 1, total);
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: p.id },

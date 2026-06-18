@@ -37,6 +37,8 @@
     "isbot": "^5.1.31",
     "json2csv": "^6.0.0-alpha.2",
     "nodemailer": "^9.0.1",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.19.1",
     "prisma": "^6.16.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

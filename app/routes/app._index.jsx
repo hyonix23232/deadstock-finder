@@ -2,7 +2,7 @@ import { useLoaderData, useFetcher, Navigate } from "react-router";
 import { useEffect, useState, useCallback } from "react";
 
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, Badge, ProgressBar, DataTable, ChoiceList, Select, EmptyState } from "@shopify/polaris";
+import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, Badge, ProgressBar, DataTable, ChoiceList, Select, EmptyState, Box, Checkbox } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { getDashboardStats, refreshDeadStock } from "../services/detection.server";
@@ -136,6 +136,16 @@ export default function Dashboard() {
   const [order, setOrder] = useState("desc");
   const [filter, setFilter] = useState("all");
   const [initialScanning, setInitialScanning] = useState(needsScan && stats && !stats.lastScanAt);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanCurrent, setScanCurrent] = useState(0);
+  const [scanTotal, setScanTotal] = useState(0);
+
+  useEffect(() => {
+    if (!redirectTo && stats && typeof window !== "undefined" && window.shopify?.navigation) {
+      const count = stats.totalDeadStock;
+      window.shopify.navigation.update({ badge: { value: count } });
+    }
+  }, [redirectTo, stats]);
 
   const toggleSelect = (id) => {
     const next = new Set(selected);
@@ -144,7 +154,7 @@ export default function Dashboard() {
   };
 
   const selectAll = () => {
-    if (selected.size === deadStock.length) setSelected(new Set());
+    if (selected.size === deadStock.length && deadStock.length > 0) setSelected(new Set());
     else setSelected(new Set(deadStock.map((e) => e.product.id)));
   };
 
@@ -162,6 +172,9 @@ export default function Dashboard() {
       try {
         const res = await fetch("/app/scan-status");
         const data = await res.json();
+        setScanProgress(data.scanProgress || 0);
+        setScanCurrent(data.scanCurrentProduct || 0);
+        setScanTotal(data.scanTotalProducts || 0);
         if (data.scanStatus === "completed") {
           clearInterval(interval);
           window.location.reload();
@@ -197,17 +210,30 @@ export default function Dashboard() {
     return (
       <Page title="Dead Stock Dashboard">
         <Card>
-          <BlockStack gap="400" align="center">
-            <Text variant="headingMd" as="h2">Performing initial scan...</Text>
-            <ProgressBar progress={0} size="large" color="success" />
-            <Text variant="bodySm" as="p" tone="subdued">
-              Analyzing your products and order history
-            </Text>
-          </BlockStack>
+          <Box padding="800">
+            <BlockStack gap="400" align="center">
+              <Text variant="headingLg" as="h2" alignment="center">
+                Analyzing your inventory
+              </Text>
+              <ProgressBar progress={scanProgress} size="large" color="success" />
+              <Text variant="bodyMd" as="p" tone="subdued" alignment="center">
+                {scanTotal > 0
+                  ? `Scanning ${scanCurrent} of ${scanTotal} products... ${scanProgress}% complete`
+                  : `Scanning products and order history... ${scanProgress}%`}
+              </Text>
+            </BlockStack>
+          </Box>
         </Card>
       </Page>
     );
   }
+
+  const statColor = {
+    "Flagged Products": "var(--p-color-border-critical)",
+    "Stuck Inventory Value": "var(--p-color-border-warning)",
+    "Weekly Trend": "var(--p-color-border-info)",
+    "Plan": "var(--p-color-border-success)",
+  };
 
   const statCards = [
     { label: "Flagged Products", value: stats.totalDeadStock, tone: stats.totalDeadStock > 0 ? "critical" : "success" },
@@ -216,26 +242,13 @@ export default function Dashboard() {
     { label: "Plan", value: plan.charAt(0).toUpperCase() + plan.slice(1), tone: undefined },
   ];
 
-  const filterChoices = [
-    { label: "All", value: "all" },
-    { label: "Discount", value: "discount" },
-    { label: "Bundle", value: "bundle" },
-    { label: "Archive", value: "archive" },
-  ];
-
-  const sortOptions = [
-    { label: "Days (newest first)", value: "days-desc" },
-    { label: "Days (oldest first)", value: "days-asc" },
-    { label: "Price (high to low)", value: "price-desc" },
-    { label: "Price (low to high)", value: "price-asc" },
-  ];
-
   const rows = deadStock.map((entry) => {
     const suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {};
     return [
       canBulk ? (
-        <input
-          type="checkbox"
+        <Checkbox
+          label=""
+          labelHidden
           checked={selected.has(entry.product.id)}
           onChange={() => toggleSelect(entry.product.id)}
         />
@@ -265,8 +278,17 @@ export default function Dashboard() {
     ];
   }).filter(Boolean);
 
+  const checkboxHeader = canBulk ? (
+    <Checkbox
+      label=""
+      labelHidden
+      checked={deadStock.length > 0 && selected.size === deadStock.length}
+      onChange={selectAll}
+    />
+  ) : null;
+
   const dataTableColumns = [
-    ...(canBulk ? [{ content: "" }] : []),
+    ...(canBulk ? [{ content: checkboxHeader }] : []),
     { content: "Product" },
     { content: "Price" },
     { content: "Inventory" },
@@ -281,67 +303,78 @@ export default function Dashboard() {
       <BlockStack gap="400">
         <InlineStack gap="300" wrap={false}>
           {statCards.map((s) => (
-            <Card key={s.label} padding="300" style={{ flex: 1 }}>
-              <BlockStack gap="100">
-                <Text variant="bodySm" tone="subdued" as="span">{s.label}</Text>
-                <Text variant="headingXl" as="p" tone={s.tone}>
-                  {s.value}
-                </Text>
-              </BlockStack>
-            </Card>
+            <div key={s.label} style={{ flex: 1, borderLeft: `4px solid ${statColor[s.label] || "transparent"}`, paddingLeft: 0 }}>
+              <Card padding="400">
+                <BlockStack gap="100">
+                  <Text variant="bodySm" tone="subdued" as="span">{s.label}</Text>
+                  <Text variant="headingXl" as="p" tone={s.tone}>
+                    {s.value}
+                  </Text>
+                </BlockStack>
+              </Card>
+            </div>
           ))}
         </InlineStack>
 
-        <Card>
-          <BlockStack gap="300">
-            <Text variant="headingMd" as="h2">Filters</Text>
-            <InlineStack gap="300" align="start" blockAlign="center">
-              <ChoiceList
-                title="Type"
-                titleHidden
-                choices={filterChoices}
-                selected={[filter]}
-                onChange={([v]) => setFilter(v)}
-              />
-              <Select
-                label="Sort"
-                labelHidden
-                options={sortOptions}
-                value={`${sortBy}-${order}`}
-                onChange={(v) => { const [s, o] = v.split("-"); setSortBy(s); setOrder(o); }}
-              />
-              {canBulk && selected.size > 0 && (
-                <Text variant="bodySm" tone="subdued" as="span">{selected.size} selected</Text>
-              )}
-            </InlineStack>
-          </BlockStack>
-        </Card>
+        {stats.lastScanAt && (
+          <Text variant="bodySm" tone="subdued" as="p">
+            Last scanned: {new Date(stats.lastScanAt).toLocaleDateString()} at {new Date(stats.lastScanAt).toLocaleTimeString()}
+          </Text>
+        )}
 
         {canBulk && selected.size > 0 && (
-          <Card>
-            <BlockStack gap="300">
-              <Text variant="headingMd" as="h2">Bulk Actions</Text>
+          <Box padding="300" borderWidth="025" borderColor="border" borderRadius="200">
+            <InlineStack gap="300" align="space-between" blockAlign="center">
+              <Text variant="bodyMd" fontWeight="bold" as="span">{selected.size} selected</Text>
               <ButtonGroup>
-                <Button variant="secondary" onClick={handleBulkDiscount}>Bulk Discount</Button>
-                <Button variant="secondary" onClick={handleBulkArchive}>Bulk Archive</Button>
-                <Button variant="secondary" onClick={handleBulkExport}>Export as CSV</Button>
+                <Button variant="secondary" size="slim" onClick={handleBulkDiscount}>Bulk Discount</Button>
+                <Button variant="secondary" size="slim" onClick={handleBulkArchive}>Bulk Archive</Button>
+                <Button variant="secondary" size="slim" onClick={handleBulkExport}>Export CSV</Button>
               </ButtonGroup>
-            </BlockStack>
-          </Card>
+            </InlineStack>
+          </Box>
         )}
 
         <Card>
           <BlockStack gap="300">
-            <Text variant="headingMd" as="h2">
-              {filter === "all" ? "All Flagged Products" : `${filter.charAt(0).toUpperCase() + filter.slice(1)} Suggestions`}
-            </Text>
+            <InlineStack align="space-between" blockAlign="center">
+              <Text variant="headingMd" as="h2">
+                {filter === "all" ? "Flagged Products" : `${filter.charAt(0).toUpperCase() + filter.slice(1)}`}
+              </Text>
+              <InlineStack gap="100">
+                {["all", "discount", "bundle", "archive"].map((f) => (
+                  <Button
+                    key={f}
+                    size="slim"
+                    variant={filter === f ? "primary" : "tertiary"}
+                    onClick={() => setFilter(f)}
+                  >
+                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                  </Button>
+                ))}
+                <Select
+                  label="Sort"
+                  labelHidden
+                  options={[
+                    { label: "Days (newest)", value: "days-desc" },
+                    { label: "Days (oldest)", value: "days-asc" },
+                    { label: "Price (high)", value: "price-desc" },
+                    { label: "Price (low)", value: "price-asc" },
+                  ]}
+                  value={`${sortBy}-${order}`}
+                  onChange={(v) => { const [s, o] = v.split("-"); setSortBy(s); setOrder(o); }}
+                />
+              </InlineStack>
+            </InlineStack>
+
             {deadStock.length === 0 ? (
               <EmptyState
                 heading="No dead stock found"
                 image={null}
+                action={{ content: "Adjust threshold", url: "/app/settings" }}
               >
                 <Text variant="bodyMd" as="p" tone="subdued">
-                  Your inventory looks healthy! All products have sold within your threshold period.
+                  Your inventory looks healthy! All products have sold within your detection threshold. You can adjust the threshold in settings if needed.
                 </Text>
               </EmptyState>
             ) : (

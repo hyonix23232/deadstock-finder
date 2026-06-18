@@ -15,10 +15,15 @@ export async function updateStorePlan(shop, plan) {
   });
 }
 
-export async function updateScanProgress(shop, status, progress) {
+export async function updateScanProgress(shop, status, progress, current, total) {
   return prisma.store.update({
     where: { shop },
-    data: { scanStatus: status, scanProgress: progress ?? 0 },
+    data: {
+      scanStatus: status,
+      scanProgress: progress ?? 0,
+      scanCurrentProduct: current ?? 0,
+      scanTotalProducts: total ?? 0,
+    },
   });
 }
 
