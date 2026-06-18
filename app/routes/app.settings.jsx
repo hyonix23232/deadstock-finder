@@ -12,20 +12,32 @@ export const loader = async ({ request }) => {
   const { session, billing } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
 
+  const billingPlans = await billing.check({ plans: ["Starter", "Pro"] });
+
+  let plan = "free";
+  if (billingPlans?.Pro?.active) plan = "pro";
+  else if (billingPlans?.Starter?.active) plan = "starter";
+
+  if (plan !== store.plan) {
+    await prisma.store.update({
+      where: { shop: session.shop },
+      data: { plan },
+    });
+    store.plan = plan;
+  }
+
   const excludedProducts = await prisma.excludedProduct.findMany({
     where: { shop: session.shop },
     include: { product: true },
     orderBy: { createdAt: "desc" },
   });
 
-  const billingPlans = await billing.check({ plans: ["Starter", "Pro"] });
-
   return {
     store,
     excludedProducts,
-    canEmail: hasFeature(store.plan, "email"),
-    canBulk: hasFeature(store.plan, "bulk"),
-    currentPlan: store.plan,
+    canEmail: hasFeature(plan, "email"),
+    canBulk: hasFeature(plan, "bulk"),
+    currentPlan: plan,
     billingPlans,
   };
 };
@@ -90,17 +102,17 @@ const ALL_PLAN_FEATURES = [
 
 export default function Settings() {
   const { store, excludedProducts, canEmail, canBulk, currentPlan, billingPlans } = useLoaderData();
-  const fetcher = useFetcher();
+  const subscribeFetcher = useFetcher();
   const [threshold, setThreshold] = useState(String(store.threshold));
 
   useEffect(() => {
-    if (fetcher.data?.ok) {
-      window.shopify?.toast?.show?.(fetcher.data.message);
+    if (subscribeFetcher.data?.ok) {
+      window.shopify?.toast?.show?.(subscribeFetcher.data.message);
     }
-    if (fetcher.data?.confirmationUrl) {
-      window.open(fetcher.data.confirmationUrl, "_top");
+    if (subscribeFetcher.data?.confirmationUrl) {
+      window.open(subscribeFetcher.data.confirmationUrl, "_top");
     }
-  }, [fetcher.data]);
+  }, [subscribeFetcher.data]);
 
   return (
     <Page title="Settings">
@@ -191,11 +203,13 @@ export default function Settings() {
                     </div>
                     <div style={{ marginTop: "auto" }}>
                       {!isCurrent && isUpgrade && (
-                        <fetcher.Form method="post">
+                        <subscribeFetcher.Form method="post">
                           <input type="hidden" name="intent" value="subscribe" />
                           <input type="hidden" name="plan" value={meta.label} />
-                          <Button variant="primary" submit fullWidth>Upgrade to {meta.label}</Button>
-                        </fetcher.Form>
+                          <Button variant="primary" submit fullWidth loading={subscribeFetcher.state !== "idle"}>
+                            Upgrade to {meta.label}
+                          </Button>
+                        </subscribeFetcher.Form>
                       )}
                     </div>
                   </div>
