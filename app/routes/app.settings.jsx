@@ -110,7 +110,7 @@ export default function Settings() {
       window.shopify?.toast?.show?.(subscribeFetcher.data.message);
     }
     if (subscribeFetcher.data?.confirmationUrl) {
-      window.open(subscribeFetcher.data.confirmationUrl, "_top");
+      window.top.location.href = subscribeFetcher.data.confirmationUrl;
     }
   }, [subscribeFetcher.data]);
 
