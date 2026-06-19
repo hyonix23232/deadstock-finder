@@ -73,7 +73,7 @@ export const action = async ({ request }) => {
 
   if (intent === "subscribe") {
     const plan = formData.get("plan");
-    const result = await billing.request({ plan, returnUrl: `${process.env.SHOPIFY_APP_URL || ""}/app/settings` });
+    const result = await billing.request({ plan, isTest: true, returnUrl: `${process.env.SHOPIFY_APP_URL || ""}/app/settings` });
     return { ok: true, confirmationUrl: result.confirmationUrl, message: "Redirecting to billing..." };
   }
 
