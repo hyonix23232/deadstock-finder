@@ -59,7 +59,9 @@ export default function Onboarding() {
     setScanning(true);
     setError(null);
     try {
-      const res = await fetch("/app/onboarding/scan", {
+      const params = new URLSearchParams(window.location.search);
+      const scanUrl = `/app/onboarding/scan?${params.toString()}`;
+      const res = await fetch(scanUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ threshold }),

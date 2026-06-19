@@ -12,11 +12,14 @@ export const loader = async ({ request }) => {
   const { session, billing } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
 
-  const billingPlans = await billing.check({ plans: ["Starter", "Pro"] });
-
-  let plan = "free";
-  if (billingPlans?.Pro?.active) plan = "pro";
-  else if (billingPlans?.Starter?.active) plan = "starter";
+  let billingPlans, plan = "free";
+  try {
+    billingPlans = await billing.check({ plans: ["Starter", "Pro"] });
+    if (billingPlans?.Pro?.active) plan = "pro";
+    else if (billingPlans?.Starter?.active) plan = "starter";
+  } catch (e) {
+    console.warn("Billing check failed, defaulting to free:", e.message);
+  }
 
   if (plan !== store.plan) {
     await prisma.store.update({
@@ -73,8 +76,12 @@ export const action = async ({ request }) => {
 
   if (intent === "subscribe") {
     const plan = formData.get("plan");
-    const result = await billing.request({ plan, isTest: true, returnUrl: `${process.env.SHOPIFY_APP_URL || ""}/app/settings` });
-    return { ok: true, confirmationUrl: result.confirmationUrl, message: "Redirecting to billing..." };
+    try {
+      const result = await billing.request({ plan, isTest: true, returnUrl: `${process.env.SHOPIFY_APP_URL || ""}/app/settings` });
+      return { ok: true, confirmationUrl: result.confirmationUrl, message: "Redirecting to billing..." };
+    } catch (e) {
+      return { ok: false, error: e.message || "Billing request failed. The app is not published on the App Store yet." };
+    }
   }
 
   if (intent === "rescan") {
