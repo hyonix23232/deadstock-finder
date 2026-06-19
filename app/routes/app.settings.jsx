@@ -156,10 +156,10 @@ export default function Settings() {
                 const isCurrent = planKey === currentPlan;
                 const planOrder = ["free", "starter", "pro"];
                 const isUpgrade = planOrder.indexOf(planKey) > planOrder.indexOf(currentPlan);
-                const features = ["products", "email", "bulk", "reports", "trial"];
+                const features = ["products", "email", "bulk", "trial", "reports"];
                 const included = {
                   free: [true, false, false, false, false],
-                  starter: [true, true, true, false, true],
+                  starter: [true, true, true, true, false],
                   pro: [true, true, true, true, true],
                 };
                 return (
