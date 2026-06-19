@@ -10,7 +10,7 @@ export const PLANS = {
     name: "Starter",
     price: 15,
     productLimit: 500,
-    trialDays: 0,
+    trialDays: 7,
     features: ["scan", "detection", "insights", "suggestions", "exclude", "dashboard", "badge", "mobile", "email"],
   },
   pro: {
@@ -36,7 +36,7 @@ export const BILLING_PLANS = [
     amount: 1500,
     currencyCode: "USD",
     interval: "EVERY_30_DAYS",
-    trialDays: 0,
+    trialDays: 7,
     replacementBehavior: "IMMEDIATELY",
   },
   {

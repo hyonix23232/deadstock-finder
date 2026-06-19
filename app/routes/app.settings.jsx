@@ -159,7 +159,7 @@ export default function Settings() {
                 const features = ["products", "email", "bulk", "reports", "trial"];
                 const included = {
                   free: [true, false, false, false, false],
-                  starter: [true, true, true, false, false],
+                  starter: [true, true, true, false, true],
                   pro: [true, true, true, true, true],
                 };
                 return (
