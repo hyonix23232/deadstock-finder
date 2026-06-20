@@ -4,7 +4,6 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { Page, Card, Text, BlockStack, InlineStack, Button, Banner, ChoiceList, DataTable, Badge, Box, Checkbox } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
-import { scanStore } from "../services/scanner.server";
 import { hasFeature } from "../services/billing.server";
 import prisma from "../db.server";
 
@@ -84,12 +83,6 @@ export const action = async ({ request }) => {
     }
   }
 
-  if (intent === "rescan") {
-    const { session: sess, admin } = await authenticate.admin(request);
-    await scanStore(admin, sess.shop);
-    return { ok: true, message: "Scan completed" };
-  }
-
   return { ok: false };
 };
 
@@ -121,6 +114,12 @@ export default function Settings() {
       window.top.location.href = subscribeFetcher.data.confirmationUrl;
     }
   }, [subscribeFetcher.data]);
+
+  useEffect(() => {
+    if (fetcher.state === "submitting") {
+      window.shopify?.toast?.show?.("Scan started...");
+    }
+  }, [fetcher.state]);
 
   return (
     <Page title="Settings">
@@ -291,10 +290,15 @@ export default function Settings() {
                 <Text variant="bodySm" as="p" tone="subdued">
                   Trigger a full rescan of your inventory and order history.
                 </Text>
-                <fetcher.Form method="post">
-                  <input type="hidden" name="intent" value="rescan" />
-                  <Button variant="secondary" submit fullWidth>Rescan Now</Button>
+                <fetcher.Form method="post" action="/app/scan">
+                  <input type="hidden" name="threshold" value={threshold} />
+                  <Button variant="secondary" fullWidth submit>Rescan Now</Button>
                 </fetcher.Form>
+                <InlineStack gap="200">
+                  <Button variant="tertiary" url={`/reauthorize?shop=${encodeURIComponent(store.shop)}`}>
+                    Reset Session
+                  </Button>
+                </InlineStack>
                 {store.lastScanAt && (
                   <Text variant="bodySm" tone="subdued" as="p">
                     Last scan: {new Date(store.lastScanAt).toLocaleDateString()}

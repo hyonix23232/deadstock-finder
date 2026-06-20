@@ -1,6 +1,23 @@
 import prisma from "../db.server";
 import { getOrCreateStore, updateScanProgress } from "./store.server";
 
+async function shopifyFetch(session, query, variables = {}) {
+  const url = `https://${session.shop}/admin/api/2026-04/graphql.json`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      "X-Shopify-Access-Token": session.accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Shopify API ${resp.status}: ${text.substring(0, 500)}`);
+  }
+  return resp.json();
+}
+
 const PRODUCTS_QUERY = `#graphql
   query GetProducts($cursor: String) {
     products(first: 250, after: $cursor) {
@@ -40,16 +57,13 @@ const ORDERS_QUERY = `#graphql
   }
 `;
 
-async function fetchAllProducts(admin) {
+async function fetchAllProducts(session) {
   const products = [];
   let cursor = null;
   let hasNext = true;
 
   while (hasNext) {
-    const result = await admin.graphql(PRODUCTS_QUERY, {
-      variables: { cursor },
-    });
-    const json = await result.json();
+    const json = await shopifyFetch(session, PRODUCTS_QUERY, { cursor });
     const page = json.data.products;
     for (const edge of page.edges) {
       const node = edge.node;
@@ -70,17 +84,17 @@ async function fetchAllProducts(admin) {
   return products;
 }
 
-async function fetchProductOrders(admin, productGid, shop) {
+async function fetchProductOrders(session, productGid) {
   const orders = [];
   let cursor = null;
   let hasNext = true;
   const productId = productGid.split("/").pop();
 
   while (hasNext) {
-    const result = await admin.graphql(ORDERS_QUERY, {
-      variables: { productId: `gid://shopify/Product/${productId}`, cursor },
+    const json = await shopifyFetch(session, ORDERS_QUERY, {
+      productId: `gid://shopify/Product/${productId}`,
+      cursor,
     });
-    const json = await result.json();
     const page = json.data.orders;
     for (const edge of page.edges) {
       const hasProduct = edge.node.lineItems.edges.some(
@@ -96,11 +110,11 @@ async function fetchProductOrders(admin, productGid, shop) {
   return orders;
 }
 
-export async function scanStore(admin, shop) {
+export async function scanStore(session, shop) {
   const store = await getOrCreateStore(shop);
   await updateScanProgress(shop, "scanning", 0);
 
-  const products = await fetchAllProducts(admin);
+  const products = await fetchAllProducts(session);
   const total = products.length;
   await updateScanProgress(shop, "scanning", 5, 0, total);
 
@@ -146,7 +160,7 @@ export async function scanStore(admin, shop) {
     }
 
     if (store.plan !== "free" || i < 50) {
-      const orders = await fetchProductOrders(admin, p.id, shop);
+      const orders = await fetchProductOrders(session, p.id);
       const lastOrder = orders.length > 0 ? orders.sort((a, b) => b - a)[0] : null;
       const totalSales = orders.length;
 

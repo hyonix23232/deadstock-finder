@@ -1,4 +1,4 @@
-import { Outlet, useLoaderData, useRouteError, NavLink } from "react-router";
+import { Outlet, useLoaderData, useRouteError, NavLink, useLocation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { AppProvider as PolarisProvider } from "@shopify/polaris";
@@ -39,23 +39,25 @@ export const loader = async ({ request }) => {
 
 export default function App() {
   const { apiKey } = useLoaderData();
+  const location = useLocation();
+  const search = location.search;
 
   return (
     <PolarisProvider i18n={enTranslations}>
       <AppProvider embedded apiKey={apiKey}>
         <div style={navStyle}>
           <div style={{ display: "flex", flexWrap: "wrap" }}>
-            <NavLink to="/app" end style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+            <NavLink to={{ pathname: "/app", search }} end style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
               Dashboard
             </NavLink>
-            <NavLink to="/app/settings" style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+            <NavLink to={{ pathname: "/app/settings", search }} style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
               Settings
             </NavLink>
-            <NavLink to="/app/reports" style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+            <NavLink to={{ pathname: "/app/reports", search }} style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
               Reports
             </NavLink>
           </div>
-          <NavLink to="/app/privacy" style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
+          <NavLink to={{ pathname: "/app/privacy", search }} style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
             Privacy
           </NavLink>
         </div>

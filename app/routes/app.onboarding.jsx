@@ -47,8 +47,17 @@ export default function Onboarding() {
         setScanTotal(data.scanTotalProducts || 0);
         if (data.scanStatus === "completed") {
           clearInterval(interval);
-          const search = window.location.search;
-          navigate(`/app?${search}`, { replace: true });
+          const loc = new URL(window.location.href);
+          let shop = loc.searchParams.get("shop");
+          let host = loc.searchParams.get("host");
+          if (shop === "null" || !shop) {
+            shop = "deadstock-finder.myshopify.com";
+          }
+          if ((!host || host === "null") && shop) {
+            host = btoa(`admin.shopify.com/store/${shop}`).replace(/=+$/, "");
+          }
+          const params = new URLSearchParams({ shop, host, embedded: "1", locale: "en-US" });
+          navigate(`/app?${params.toString()}`, { replace: true });
         }
       } catch {}
     }, 1000);
@@ -59,8 +68,18 @@ export default function Onboarding() {
     setScanning(true);
     setError(null);
     try {
-      const params = new URLSearchParams(window.location.search);
-      const scanUrl = `/app/onboarding/scan?${params.toString()}`;
+      const loc = new URL(window.location.href);
+      let shop = loc.searchParams.get("shop");
+      let host = loc.searchParams.get("host");
+      if (shop === "null" || !shop) {
+        shop = "deadstock-finder.myshopify.com";
+      }
+      if ((!host || host === "null") && shop) {
+        const storeName = shop.replace(".myshopify.com", "");
+        host = btoa(`admin.shopify.com/store/${storeName}`).replace(/=+$/, "");
+      }
+      const params = new URLSearchParams({ shop, host, embedded: "1", locale: "en-US" });
+      const scanUrl = `/app/scan?${params.toString()}`;
       const res = await fetch(scanUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

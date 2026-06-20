@@ -11,7 +11,7 @@ import prisma from "./db.server";
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
-  apiVersion: ApiVersion.October25,
+  apiVersion: ApiVersion.Unstable,
   scopes: process.env.SCOPES?.includes(",")
     ? process.env.SCOPES.split(",").map(s => s.trim()).filter(Boolean)
     : process.env.SCOPES?.split(" ").map(s => s.trim()).filter(Boolean),
@@ -50,7 +50,7 @@ const shopify = shopifyApp({
 });
 
 export default shopify;
-export const apiVersion = ApiVersion.October25;
+export const apiVersion = ApiVersion.April26;
 export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
 export const authenticate = shopify.authenticate;
 export const unauthenticated = shopify.unauthenticated;

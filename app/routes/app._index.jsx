@@ -6,7 +6,6 @@ import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner,
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { getDashboardStats, refreshDeadStock } from "../services/detection.server";
-import { scanStore } from "../services/scanner.server";
 import { hasFeature } from "../services/billing.server";
 import { generateCsv } from "../services/reports.server";
 import prisma from "../db.server";
@@ -18,18 +17,22 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   if (!store.onboardingDone) {
     const shop = url.searchParams.get("shop") || session.shop;
-    const host = url.searchParams.get("host");
+    const storeName = shop.replace(".myshopify.com", "");
+    const host = url.searchParams.get("host") || Buffer.from(`admin.shopify.com/store/${storeName}`).toString("base64").replace(/=+$/, "");
     const locale = url.searchParams.get("locale") || "en-US";
     return { redirectTo: `/app/onboarding?${new URLSearchParams({ shop, host, embedded: "1", locale }).toString()}`, stats: null, deadStock: [], plan: "free", canBulk: false, needsScan: false };
   }
 
+  if (store.scanStatus === "scanning" && !store.lastScanAt) {
+    await prisma.store.update({
+      where: { shop: session.shop },
+      data: { scanStatus: "pending", scanProgress: 0 },
+    });
+    store.scanStatus = "pending";
+  }
+
   const needsScan = !store.lastScanAt ||
     (Date.now() - new Date(store.lastScanAt).getTime()) > 24 * 60 * 60 * 1000;
-
-  if (needsScan) {
-    const { session: sess, admin } = await authenticate.admin(request);
-    await scanStore(admin, sess.shop).catch(() => {});
-  }
 
   await refreshDeadStock(session.shop);
   const stats = await getDashboardStats(session.shop);
@@ -60,7 +63,7 @@ export const loader = async ({ request }) => {
       : b.daysSinceSale - a.daysSinceSale);
   }
 
-  return { redirectTo: "", stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan };
+  return { redirectTo: "", stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan, scanStatus: store.scanStatus };
 };
 
 export const action = async ({ request }) => {
@@ -125,7 +128,7 @@ function BadgeForAction({ action, data }) {
 }
 
 export default function Dashboard() {
-  const { redirectTo, stats, deadStock, plan, canBulk, needsScan } = useLoaderData();
+  const { redirectTo, stats, deadStock, plan, canBulk, needsScan, scanStatus } = useLoaderData();
   const fetcher = useFetcher();
 
   if (redirectTo) {
@@ -136,10 +139,12 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState("days");
   const [order, setOrder] = useState("desc");
   const [filter, setFilter] = useState("all");
-  const [initialScanning, setInitialScanning] = useState(needsScan && stats && !stats.lastScanAt);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanCurrent, setScanCurrent] = useState(0);
   const [scanTotal, setScanTotal] = useState(0);
+
+  const scanning = scanStatus === "scanning";
+  const [polling, setPolling] = useState(scanning);
 
   useEffect(() => {
     if (!redirectTo && stats && typeof window !== "undefined" && window.shopify?.navigation) {
@@ -168,7 +173,7 @@ export default function Dashboard() {
   }, [fetcher.data, fetcher.state]);
 
   useEffect(() => {
-    if (!initialScanning) return;
+    if (!polling) return;
     const interval = setInterval(async () => {
       try {
         const res = await fetch("/app/scan-status");
@@ -178,12 +183,13 @@ export default function Dashboard() {
         setScanTotal(data.scanTotalProducts || 0);
         if (data.scanStatus === "completed") {
           clearInterval(interval);
+          setPolling(false);
           window.location.reload();
         }
       } catch {}
     }, 1000);
     return () => clearInterval(interval);
-  }, [initialScanning]);
+  }, [polling]);
 
   const handleBulkDiscount = useCallback(() => {
     const pct = prompt("Discount percentage:", "20");
@@ -207,7 +213,7 @@ export default function Dashboard() {
     );
   }, [selected, fetcher]);
 
-  if (initialScanning) {
+  if (scanning || polling) {
     return (
       <Page title="Dead Stock Dashboard">
         <Card>
@@ -302,6 +308,11 @@ export default function Dashboard() {
   return (
     <Page title="Dead Stock Dashboard">
       <BlockStack gap="400">
+        {needsScan && (
+          <Banner tone="warning" action={{ content: "Run Scan", onAction: () => navigate("/app/settings") }}>
+            Your inventory hasn't been scanned yet or the data is outdated. Run a scan to see dead stock results.
+          </Banner>
+        )}
         <InlineStack gap="300" wrap={false}>
           {statCards.map((s) => (
             <div key={s.label} style={{ flex: 1, borderLeft: `4px solid ${statColor[s.label] || "transparent"}`, paddingLeft: 0 }}>
