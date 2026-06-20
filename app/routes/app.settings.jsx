@@ -51,7 +51,7 @@ export const action = async ({ request }) => {
 
   if (intent === "reset-session") {
     await sessionStorage.deleteSession(session.id);
-    return redirect(`/app/settings?shop=${session.shop}`, { target: "_self" });
+    return { ok: true, intent: "reset-session", shop: session.shop };
   }
 
   if (intent === "update-threshold") {
@@ -122,13 +122,18 @@ export default function Settings() {
   }, [subscribeFetcher.data]);
 
   useEffect(() => {
-    if (fetcher.data?.ok && fetcher.data?.intent === "update-threshold") {
+    if (!fetcher.data?.ok) return;
+    if (fetcher.data?.intent === "update-threshold") {
       window.shopify?.toast?.show?.("Threshold updated");
-    } else if (fetcher.data?.ok && fetcher.data?.intent === "toggle-email") {
+    } else if (fetcher.data?.intent === "toggle-email") {
       window.shopify?.toast?.show?.("Email preference saved");
-    } else if (fetcher.data?.ok && fetcher.data?.intent === "remove-exclusion") {
+    } else if (fetcher.data?.intent === "remove-exclusion") {
       window.shopify?.toast?.show?.("Product restored");
-    } else if (fetcher.data?.ok && !fetcher.data?.intent) {
+    } else if (fetcher.data?.intent === "reset-session") {
+      window.shopify?.toast?.show?.("Session reset complete");
+      const shop = fetcher.data.shop;
+      setTimeout(() => { window.top.location.href = `/app/settings?shop=${shop}`; }, 1000);
+    } else if (!fetcher.data?.intent) {
       window.shopify?.toast?.show?.("Scan completed");
     }
   }, [fetcher.data]);
