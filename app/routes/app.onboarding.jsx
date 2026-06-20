@@ -1,4 +1,4 @@
-import { useLoaderData, redirect } from "react-router";
+import { useLoaderData, useSubmit, redirect } from "react-router";
 import { useState } from "react";
 import { Page, Card, Text, BlockStack, Button, Banner, RadioButton, InlineStack } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
@@ -61,7 +61,11 @@ export const action = async ({ request }) => {
     } catch {}
   }
 
-  return redirect("/app");
+  const url = new URL(request.url);
+  const host = url.searchParams.get("host") || "";
+  const locale = url.searchParams.get("locale") || "en-US";
+  const params = new URLSearchParams({ shop, host, embedded: "1", locale });
+  return redirect(`/app?${params.toString()}`);
 };
 
 const THRESHOLD_OPTIONS = [
@@ -73,47 +77,49 @@ const THRESHOLD_OPTIONS = [
 export default function Onboarding() {
   const { threshold: initialThreshold } = useLoaderData();
   const [threshold, setThreshold] = useState(initialThreshold || 60);
+  const submit = useSubmit();
+
+  const handleStart = () => {
+    submit({ threshold: String(threshold) }, { method: "POST" });
+  };
 
   return (
     <Page title="Welcome to Dead Stock Finder">
-      <form method="POST">
-        <input type="hidden" name="threshold" value={threshold} />
-        <BlockStack gap="400">
-          <Card>
-            <BlockStack gap="300">
-              <Text variant="headingMd" as="h2">Choose your detection threshold</Text>
-              <Text variant="bodySm" as="p" tone="subdued">
-                Dead Stock Finder will flag any product that hasn't sold within your chosen time window.
-                You can change this at any time from Settings.
-              </Text>
-              <BlockStack gap="200">
-                {THRESHOLD_OPTIONS.map((opt) => (
-                  <Card key={opt.value} padding="300">
-                    <RadioButton
-                      label={
-                        <BlockStack gap="100">
-                          <Text variant="bodyMd" fontWeight="bold" as="span">{opt.label}</Text>
-                          <Text variant="bodySm" tone="subdued" as="span">{opt.description}</Text>
-                        </BlockStack>
-                      }
-                      checked={threshold === opt.value}
-                      onChange={() => setThreshold(opt.value)}
-                      id={`threshold-${opt.value}`}
-                      name="threshold"
-                    />
-                  </Card>
-                ))}
-              </BlockStack>
+      <BlockStack gap="400">
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h2">Choose your detection threshold</Text>
+            <Text variant="bodySm" as="p" tone="subdued">
+              Dead Stock Finder will flag any product that hasn't sold within your chosen time window.
+              You can change this at any time from Settings.
+            </Text>
+            <BlockStack gap="200">
+              {THRESHOLD_OPTIONS.map((opt) => (
+                <Card key={opt.value} padding="300">
+                  <RadioButton
+                    label={
+                      <BlockStack gap="100">
+                        <Text variant="bodyMd" fontWeight="bold" as="span">{opt.label}</Text>
+                        <Text variant="bodySm" tone="subdued" as="span">{opt.description}</Text>
+                      </BlockStack>
+                    }
+                    checked={threshold === opt.value}
+                    onChange={() => setThreshold(opt.value)}
+                    id={`threshold-${opt.value}`}
+                    name="threshold"
+                  />
+                </Card>
+              ))}
             </BlockStack>
-          </Card>
+          </BlockStack>
+        </Card>
 
-          <InlineStack gap="300">
-            <Button variant="primary" submit>
-              Start Scanning
-            </Button>
-          </InlineStack>
-        </BlockStack>
-      </form>
+        <InlineStack gap="300">
+          <Button variant="primary" onClick={handleStart}>
+            Start Scanning
+          </Button>
+        </InlineStack>
+      </BlockStack>
     </Page>
   );
 }
