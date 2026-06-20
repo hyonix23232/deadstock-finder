@@ -13,8 +13,8 @@ export const action = async ({ request }) => {
 
   await prisma.store.upsert({
     where: { shop },
-    update: { threshold, onboardingDone: true, scanStatus: "scanning", scanProgress: 0, scanCurrentProduct: 0, scanTotalProducts: 0, lastScanAt: new Date(0) },
-    create: { shop, threshold: Number(threshold), onboardingDone: true, scanStatus: "scanning", scanProgress: 0, scanCurrentProduct: 0, scanTotalProducts: 0, lastScanAt: new Date(0) },
+    update: { threshold, onboardingDone: true, scanStatus: "scanning", scanProgress: 0, scanCurrentProduct: 0, scanTotalProducts: 0 },
+    create: { shop, threshold: Number(threshold), onboardingDone: true, scanStatus: "scanning", scanProgress: 0, scanCurrentProduct: 0, scanTotalProducts: 0 },
   });
 
   const sessions = await prisma.session.findMany({ where: { shop } });

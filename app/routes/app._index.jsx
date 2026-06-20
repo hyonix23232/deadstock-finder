@@ -23,12 +23,15 @@ export const loader = async ({ request }) => {
     return { redirectTo: `/app/onboarding?${new URLSearchParams({ shop, host, embedded: "1", locale }).toString()}`, stats: null, deadStock: [], plan: "free", canBulk: false, needsScan: false };
   }
 
-  if (store.scanStatus === "scanning" && !store.lastScanAt) {
-    await prisma.store.update({
-      where: { shop: session.shop },
-      data: { scanStatus: "pending", scanProgress: 0 },
-    });
-    store.scanStatus = "pending";
+  if (store.scanStatus === "scanning") {
+    const staleMs = Date.now() - new Date(store.updatedAt).getTime();
+    if (staleMs > 60000) {
+      await prisma.store.update({
+        where: { shop: session.shop },
+        data: { scanStatus: "pending", scanProgress: 0 },
+      });
+      store.scanStatus = "pending";
+    }
   }
 
   const needsScan = !store.lastScanAt ||
