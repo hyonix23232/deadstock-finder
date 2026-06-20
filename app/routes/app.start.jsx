@@ -1,15 +1,14 @@
 import prisma from "../db.server";
 import { scanStore } from "../services/scanner.server";
 import { detectDeadStock } from "../services/detection.server";
+import { authenticate } from "../shopify.server";
 
 export const action = async ({ request }) => {
+  const url = new URL(request.url);
+  const { session, redirect } = await authenticate.admin(request);
+  const shop = url.searchParams.get("shop") || session.shop;
   const formData = await request.formData();
-  const shop = formData.get("shop");
   const threshold = parseInt(formData.get("threshold") || "60", 10);
-
-  if (!shop) {
-    return new Response(JSON.stringify({ ok: false, error: "Missing shop" }), { status: 400, headers: { "Content-Type": "application/json" } });
-  }
 
   await prisma.store.upsert({
     where: { shop },
@@ -43,11 +42,20 @@ export const action = async ({ request }) => {
     } catch {}
   }
 
-  return { ok: true };
+  const host = url.searchParams.get("host");
+  const locale = url.searchParams.get("locale") || "en-US";
+  const params = new URLSearchParams({ shop, host, embedded: "1", locale });
+  return redirect(`/app?${params.toString()}`);
 };
 
 export const loader = async ({ request }) => {
-  return { ok: true };
+  const { redirect } = await authenticate.admin(request);
+  const url = new URL(request.url);
+  const shop = url.searchParams.get("shop");
+  const host = url.searchParams.get("host");
+  const locale = url.searchParams.get("locale") || "en-US";
+  const params = new URLSearchParams({ shop, host, embedded: "1", locale });
+  return redirect(`/app?${params.toString()}`);
 };
 
 export default function Start() {

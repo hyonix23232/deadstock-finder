@@ -30,30 +30,10 @@ export default function Onboarding() {
   const { threshold: initialThreshold } = useLoaderData();
   const [threshold, setThreshold] = useState(initialThreshold || 60);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const loc = typeof window !== "undefined" ? new URL(window.location.href) : null;
   const shop = loc?.searchParams.get("shop") || "";
   const host = loc?.searchParams.get("host") || "";
-
-  const handleStart = async () => {
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("shop", shop);
-      formData.append("threshold", String(threshold));
-      const res = await fetch("/app/start", { method: "POST", body: formData });
-      if (!res.ok) {
-        throw new Error(await res.text().catch(() => "Request failed"));
-      }
-    } catch (e) {
-      setError(e?.message || "Could not start scan");
-      setLoading(false);
-      return;
-    }
-    const params = new URLSearchParams({ shop, host, threshold: String(threshold), embedded: "1", locale: "en-US" });
-    window.location.href = `/app?${params.toString()}`;
-  };
 
   return (
     <Page title="Welcome to Dead Stock Finder">
@@ -93,9 +73,12 @@ export default function Onboarding() {
         )}
 
         <InlineStack gap="300">
-          <Button variant="primary" onClick={handleStart} loading={loading}>
-            Start Scanning
-          </Button>
+          <form method="POST" action={`/app/start?shop=${encodeURIComponent(shop)}&host=${encodeURIComponent(host)}`}>
+            <input type="hidden" name="threshold" value={threshold} />
+            <Button variant="primary" submit>
+              Start Scanning
+            </Button>
+          </form>
         </InlineStack>
       </BlockStack>
     </Page>
