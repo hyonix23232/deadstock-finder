@@ -128,12 +128,19 @@ export default function Settings() {
       window.shopify?.toast?.show?.("Email preference saved");
     } else if (fetcher.data?.ok && fetcher.data?.intent === "remove-exclusion") {
       window.shopify?.toast?.show?.("Product restored");
+    } else if (fetcher.data?.ok && !fetcher.data?.intent) {
+      window.shopify?.toast?.show?.("Scan completed");
     }
   }, [fetcher.data]);
 
   useEffect(() => {
-    if (fetcher.state === "submitting" && fetcher.formData?.get?.("intent") === "reset-session") {
-      window.shopify?.toast?.show?.("Resetting session...");
+    if (fetcher.state === "submitting") {
+      const intent = fetcher.formData?.get?.("intent");
+      if (intent === "reset-session") {
+        window.shopify?.toast?.show?.("Resetting session...");
+      } else if (!intent && fetcher.formData?.has?.("threshold")) {
+        window.shopify?.toast?.show?.("Scan started...");
+      }
     }
   }, [fetcher.state, fetcher.formData]);
 
