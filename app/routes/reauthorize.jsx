@@ -11,12 +11,8 @@ export const loader = async ({ request }) => {
   await sessionStorage.deleteSession(`offline_${shop}`);
   console.log(`Deleted session for ${shop}, redirecting back`);
 
-  const appUrl = process.env.SHOPIFY_APP_URL || "";
-  const host = url.searchParams.get("host");
-  const returnUrl = host
-    ? `/auth/session-token?shop=${shop}&host=${host}&shopify-reload=${encodeURIComponent(appUrl + "/app/settings?shop=" + shop)}`
-    : `/app/settings?shop=${shop}`;
-  return redirect(returnUrl);
+  const installUrl = `https://admin.shopify.com/store/${shop.replace(".myshopify.com", "")}/oauth/install?client_id=${process.env.SHOPIFY_API_KEY}`;
+  return redirect(installUrl);
 };
 
 export default function Reauthorize() {
