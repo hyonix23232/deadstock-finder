@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, redirect } from "react-router";
 import { useEffect, useState } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { Page, Card, Text, BlockStack, InlineStack, Button, Banner, ChoiceList, DataTable, Badge, Box, Checkbox } from "@shopify/polaris";
@@ -51,7 +51,7 @@ export const action = async ({ request }) => {
 
   if (intent === "reset-session") {
     await sessionStorage.deleteSession(session.id);
-    return { ok: true, intent: "reset-session", shop: session.shop };
+    return redirect(`/auth?shop=${session.shop}`, { target: "_self" });
   }
 
   if (intent === "update-threshold") {
@@ -129,10 +129,6 @@ export default function Settings() {
       window.shopify?.toast?.show?.("Email preference saved");
     } else if (fetcher.data?.intent === "remove-exclusion") {
       window.shopify?.toast?.show?.("Product restored");
-    } else if (fetcher.data?.intent === "reset-session") {
-      window.shopify?.toast?.show?.("Session reset complete");
-      const shop = fetcher.data.shop;
-      setTimeout(() => { window.top.location.href = `/app/settings?shop=${shop}`; }, 1000);
     } else if (!fetcher.data?.intent) {
       window.shopify?.toast?.show?.("Scan completed");
     }
