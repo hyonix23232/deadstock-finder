@@ -1,6 +1,6 @@
 import { useLoaderData, useSubmit, redirect } from "react-router";
-import { useState } from "react";
-import { Page, Card, Text, BlockStack, Button, Banner, RadioButton, InlineStack } from "@shopify/polaris";
+import { useState, useEffect, useRef } from "react";
+import { Page, Card, Text, BlockStack, Button, Banner, RadioButton, InlineStack, ProgressBar, Box } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import prisma from "../db.server";
@@ -47,11 +47,7 @@ export const action = async ({ request }) => {
     }
   })();
 
-  const url = new URL(request.url);
-  const host = url.searchParams.get("host") || "";
-  const locale = url.searchParams.get("locale") || "en-US";
-  const params = new URLSearchParams({ shop, host, embedded: "1", locale });
-  return redirect(`/app?${params.toString()}`);
+  return { scanStarted: true };
 };
 
 const THRESHOLD_OPTIONS = [
@@ -63,11 +59,66 @@ const THRESHOLD_OPTIONS = [
 export default function Onboarding() {
   const { threshold: initialThreshold } = useLoaderData();
   const [threshold, setThreshold] = useState(initialThreshold || 60);
+  const [scanning, setScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanCurrent, setScanCurrent] = useState(0);
+  const [scanTotal, setScanTotal] = useState(0);
   const submit = useSubmit();
 
+  const loc = typeof window !== "undefined" ? new URL(window.location.href) : null;
+  const shop = loc?.searchParams.get("shop") || "";
+  const host = loc?.searchParams.get("host") || "";
+
+  useEffect(() => {
+    if (!scanning) return;
+    const interval = setInterval(async () => {
+      try {
+        const url = `/app/scan-status?shop=${encodeURIComponent(shop)}&t=${Date.now()}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        setScanProgress(data.scanProgress || 0);
+        setScanCurrent(data.scanCurrentProduct || 0);
+        setScanTotal(data.scanTotalProducts || 0);
+        if (data.scanStatus === "completed") {
+          clearInterval(interval);
+          const params = new URLSearchParams({ shop, host, embedded: "1", locale: "en-US" });
+          window.location.href = `/app?${params.toString()}`;
+        }
+      } catch {}
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [scanning, shop, host]);
+
   const handleStart = () => {
+    setScanning(true);
     submit({ threshold: String(threshold) }, { method: "POST" });
   };
+
+  if (scanning) {
+    return (
+      <Page title="Analyzing your inventory">
+        <Card>
+          <Box padding="800">
+            <BlockStack gap="400" align="center">
+              <Text variant="headingLg" as="h2" alignment="center">
+                Analyzing your inventory
+              </Text>
+              <ProgressBar progress={scanProgress} size="large" color="success" />
+              <Text variant="bodyMd" as="p" tone="subdued" alignment="center">
+                {scanTotal > 0
+                  ? `Scanning product ${scanCurrent} of ${scanTotal}`
+                  : scanProgress > 0 && scanProgress < 100
+                    ? `Scanning... ${scanProgress}%`
+                    : scanProgress >= 100
+                      ? "Complete! Loading results..."
+                      : "Starting scan..."}
+              </Text>
+            </BlockStack>
+          </Box>
+        </Card>
+      </Page>
+    );
+  }
 
   return (
     <Page title="Welcome to Dead Stock Finder">
