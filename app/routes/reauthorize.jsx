@@ -11,7 +11,11 @@ export const loader = async ({ request }) => {
   await sessionStorage.deleteSession(`offline_${shop}`);
   console.log(`Deleted session for ${shop}, redirecting back`);
 
-  const returnUrl = `/app/settings?shop=${shop}`;
+  const appUrl = process.env.SHOPIFY_APP_URL || "";
+  const host = url.searchParams.get("host");
+  const returnUrl = host
+    ? `/auth/session-token?shop=${shop}&host=${host}&shopify-reload=${encodeURIComponent(appUrl + "/app/settings?shop=" + shop)}`
+    : `/app/settings?shop=${shop}`;
   return redirect(returnUrl);
 };
 
