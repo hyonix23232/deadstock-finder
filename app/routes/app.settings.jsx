@@ -81,10 +81,11 @@ export const action = async ({ request }) => {
   if (intent === "subscribe") {
     const plan = formData.get("plan");
     try {
-      const result = await billing.request({ plan, isTest: true, returnUrl: `${process.env.SHOPIFY_APP_URL || ""}/app/settings` });
+      const isTest = process.env.SHOPIFY_BILLING_TEST !== "false";
+      const result = await billing.request({ plan, isTest, returnUrl: `${process.env.SHOPIFY_APP_URL || ""}/app/settings` });
       return { ok: true, confirmationUrl: result.confirmationUrl, message: "Redirecting to billing..." };
     } catch (e) {
-      return { ok: false, error: e.message || "Billing request failed. The app is not published on the App Store yet." };
+      return { ok: false, error: String(e?.message || e) || "Billing request failed." };
     }
   }
 
@@ -123,15 +124,16 @@ export default function Settings() {
   useEffect(() => {
     if (fetcher.data?.ok && fetcher.data?.intent === "update-threshold") {
       window.shopify?.toast?.show?.("Threshold updated");
+    } else if (fetcher.data?.ok && fetcher.data?.intent === "toggle-email") {
+      window.shopify?.toast?.show?.("Email preference saved");
+    } else if (fetcher.data?.ok && fetcher.data?.intent === "remove-exclusion") {
+      window.shopify?.toast?.show?.("Product restored");
     }
   }, [fetcher.data]);
 
   useEffect(() => {
-    if (fetcher.state === "submitting") {
-      const isThreshold = fetcher.formData?.get?.("intent") === "update-threshold";
-      if (!isThreshold) {
-        window.shopify?.toast?.show?.("Scan started...");
-      }
+    if (fetcher.state === "submitting" && fetcher.formData?.get?.("intent") === "reset-session") {
+      window.shopify?.toast?.show?.("Resetting session...");
     }
   }, [fetcher.state, fetcher.formData]);
 

@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { Page, Card, Text, BlockStack, InlineStack, Button, Banner, DataTable, Badge, Box } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
@@ -42,6 +42,7 @@ export const loader = async ({ request }) => {
 
 export default function Reports() {
   const data = useLoaderData();
+  const navigate = useNavigate();
 
   if (data.proOnly) {
     return (
@@ -55,7 +56,7 @@ export default function Reports() {
             </Text>
             <Button
               variant="primary"
-              onClick={() => window.location.href = "/app/settings"}
+              onClick={() => navigate("/app/settings")}
             >
               Upgrade Now
             </Button>

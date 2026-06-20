@@ -165,6 +165,11 @@ export async function getDashboardStats(shop) {
 }
 
 export async function refreshDeadStock(shop) {
+  const store = await getStore(shop);
+  const lastRefresh = store.lastDetectionAt ? new Date(store.lastDetectionAt).getTime() : 0;
+  const staleMs = Date.now() - lastRefresh;
+  if (staleMs < 3600000) return getDashboardStats(shop);
+  await prisma.store.update({ where: { shop }, data: { lastDetectionAt: new Date() } });
   await detectDeadStock(shop);
   return getDashboardStats(shop);
 }

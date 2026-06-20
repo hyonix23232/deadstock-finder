@@ -28,9 +28,12 @@ export async function sendWeeklyEmail(shop) {
   const transporter = await getTransporter();
   if (!transporter) return;
 
+  const ownerSession = await prisma.session.findFirst({ where: { shop, accountOwner: true }, orderBy: { createdAt: "desc" } });
+  const toEmail = ownerSession?.email || shop;
+
   const emailContent = {
     from: process.env.FROM_EMAIL || "noreply@deadstockfinder.com",
-    to: shop,
+    to: toEmail,
     subject: `Dead Stock Finder — Weekly Report (${new Date().toLocaleDateString()})`,
     html: buildEmailHtml(newDeadStock, resolvedDeadStock, totalValue, store.threshold),
   };

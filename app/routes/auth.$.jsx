@@ -22,9 +22,11 @@ export const loader = async ({ request }) => {
       });
     }
 
-    const host = url.searchParams.get("host");
-    const locale = url.searchParams.get("locale");
-    const params = new URLSearchParams({ shop, host, embedded: "1", locale });
+    const params = new URLSearchParams();
+    params.set("shop", session?.shop || shop);
+    params.set("embedded", "1");
+    if (url.searchParams.get("host")) params.set("host", url.searchParams.get("host"));
+    if (url.searchParams.get("locale")) params.set("locale", url.searchParams.get("locale"));
     throw redirect(`/app?${params.toString()}`);
   } catch (e) {
     if (e instanceof Response) {

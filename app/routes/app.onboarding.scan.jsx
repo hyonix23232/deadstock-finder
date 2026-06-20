@@ -1,9 +1,9 @@
-export const action = async ({ request }) => {
-  const { authenticate } = await import("../shopify.server");
-  const { default: prisma } = await import("../db.server");
-  const { scanStore } = await import("../services/scanner.server");
-  const { detectDeadStock } = await import("../services/detection.server");
+import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
+import { scanStore } from "../services/scanner.server";
+import { detectDeadStock } from "../services/detection.server";
 
+export const action = async ({ request }) => {
   try {
     const authResult = await authenticate.admin(request);
     if (authResult instanceof Response) {
@@ -12,7 +12,7 @@ export const action = async ({ request }) => {
         headers: { "Content-Type": "application/json" },
       });
     }
-    const { session, admin } = authResult;
+    const { session } = authResult;
     const { threshold } = await request.json();
 
     await prisma.store.upsert({
@@ -23,7 +23,7 @@ export const action = async ({ request }) => {
 
     (async () => {
       try {
-        await scanStore(admin, session.shop);
+        await scanStore(session, session.shop);
         await detectDeadStock(session.shop);
         await prisma.store.update({
           where: { shop: session.shop },
@@ -40,7 +40,7 @@ export const action = async ({ request }) => {
     });
   } catch (e) {
     console.error("Scan error:", e);
-    return new Response(JSON.stringify({ ok: false, error: e.message }), {
+    return new Response(JSON.stringify({ ok: false, error: String(e?.message || e) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

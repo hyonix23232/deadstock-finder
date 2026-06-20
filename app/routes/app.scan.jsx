@@ -4,49 +4,10 @@ import { scanStore } from "../services/scanner.server";
 import { detectDeadStock } from "../services/detection.server";
 
 export const action = async ({ request }) => {
-  let shop, session;
-
-  try {
-    const authResult = await authenticate.admin(request);
-    if (!(authResult instanceof Response)) {
-      session = authResult.session;
-      shop = session.shop;
-    }
-  } catch {}
-
-  if (!shop) {
-    const url = new URL(request.url);
-    shop = url.searchParams.get("shop");
-  }
-
-  if (!shop) {
-    return new Response(JSON.stringify({ ok: false, error: "Missing shop parameter" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  if (!session) {
-    const sessions = await prisma.session.findMany({ where: { shop } });
-    for (const s of sessions) {
-      try {
-        const testUrl = `https://${s.shop}/admin/api/2026-04/graphql.json`;
-        const testResp = await fetch(testUrl, {
-          method: "POST",
-          headers: { "X-Shopify-Access-Token": s.accessToken, "Content-Type": "application/json" },
-          body: JSON.stringify({ query: "query { shop { name } }" }),
-        });
-        if (testResp.ok) { session = s; break; }
-      } catch {}
-    }
-  }
-
-  if (!session) {
-    return new Response(JSON.stringify({ ok: false, error: "Session not found" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  const authResult = await authenticate.admin(request);
+  if (authResult instanceof Response) return authResult;
+  const { session } = authResult;
+  const shop = session.shop;
 
   const contentType = request.headers.get("content-type") || "";
   let threshold = 60;

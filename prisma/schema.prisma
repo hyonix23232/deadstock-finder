@@ -36,6 +36,7 @@ model Store {
   scanCurrentProduct Int     @default(0)
   scanTotalProducts  Int     @default(0)
   lastScanAt        DateTime?
+  lastDetectionAt   DateTime?
   emailEnabled      Boolean  @default(false)
   onboardingDone    Boolean  @default(false)
   createdAt         DateTime @default(now())

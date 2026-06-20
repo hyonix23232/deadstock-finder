@@ -1,5 +1,5 @@
 import { useLoaderData, useFetcher, useNavigate, Navigate } from "react-router";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner, Badge, ProgressBar, DataTable, ChoiceList, Select, EmptyState, Box, Checkbox } from "@shopify/polaris";
@@ -46,27 +46,7 @@ export const loader = async ({ request }) => {
     orderBy: { daysSinceSale: "desc" },
   });
 
-  const plan = store.plan;
-  const sort = request.url.includes("sort=")
-    ? Object.fromEntries(new URL(request.url).searchParams.entries())
-    : {};
-
-  let filtered = [...deadStock];
-  if (sort.filter === "discount") filtered = filtered.filter(e => e.suggestedAction === "discount");
-  else if (sort.filter === "bundle") filtered = filtered.filter(e => e.suggestedAction === "bundle");
-  else if (sort.filter === "archive") filtered = filtered.filter(e => e.suggestedAction === "archive");
-
-  if (sort.sortBy === "price") {
-    filtered.sort((a, b) => sort.order === "asc"
-      ? a.product.price - b.product.price
-      : b.product.price - a.product.price);
-  } else if (sort.sortBy === "days") {
-    filtered.sort((a, b) => sort.order === "asc"
-      ? a.daysSinceSale - b.daysSinceSale
-      : b.daysSinceSale - a.daysSinceSale);
-  }
-
-  return { redirectTo: "", stats, deadStock: filtered, plan, canBulk: hasFeature(plan, "bulk"), needsScan, scanStatus: store.scanStatus };
+  return { redirectTo: "", stats, deadStock, plan, canBulk: hasFeature(plan, "bulk"), needsScan, scanStatus: store.scanStatus };
 };
 
 export const action = async ({ request }) => {
@@ -146,6 +126,20 @@ export default function Dashboard() {
   const [scanCurrent, setScanCurrent] = useState(0);
   const [scanTotal, setScanTotal] = useState(0);
 
+  const processedDeadStock = useMemo(() => {
+    let items = [...deadStock];
+    if (filter === "discount") items = items.filter(e => e.suggestedAction === "discount");
+    else if (filter === "bundle") items = items.filter(e => e.suggestedAction === "bundle");
+    else if (filter === "archive") items = items.filter(e => e.suggestedAction === "archive");
+    items.sort((a, b) => {
+      let cmp = 0;
+      if (sortBy === "price") cmp = a.product.price - b.product.price;
+      else if (sortBy === "days") cmp = a.daysSinceSale - b.daysSinceSale;
+      return order === "asc" ? cmp : -cmp;
+    });
+    return items;
+  }, [deadStock, filter, sortBy, order]);
+
   const scanning = scanStatus === "scanning";
   const [polling, setPolling] = useState(scanning);
 
@@ -163,8 +157,8 @@ export default function Dashboard() {
   };
 
   const selectAll = () => {
-    if (selected.size === deadStock.length && deadStock.length > 0) setSelected(new Set());
-    else setSelected(new Set(deadStock.map((e) => e.product.id)));
+    if (selected.size === processedDeadStock.length && processedDeadStock.length > 0) setSelected(new Set());
+    else setSelected(new Set(processedDeadStock.map((e) => e.product.id)));
   };
 
   useEffect(() => {
@@ -255,8 +249,9 @@ export default function Dashboard() {
     { label: "Plan", value: plan.charAt(0).toUpperCase() + plan.slice(1), tone: undefined },
   ];
 
-  const rows = deadStock.map((entry) => {
-    const suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {};
+  const rows = processedDeadStock.map((entry) => {
+    let suggestedData = {};
+    try { suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {}; } catch {}
     return [
       canBulk ? (
         <Checkbox
@@ -295,7 +290,7 @@ export default function Dashboard() {
     <Checkbox
       label=""
       labelHidden
-      checked={deadStock.length > 0 && selected.size === deadStock.length}
+      checked={processedDeadStock.length > 0 && selected.size === processedDeadStock.length}
       onChange={selectAll}
     />
   ) : null;
@@ -385,7 +380,7 @@ export default function Dashboard() {
               </InlineStack>
             </InlineStack>
 
-            {deadStock.length === 0 ? (
+            {processedDeadStock.length === 0 ? (
               <EmptyState
                 heading="No dead stock found"
                 image={null}

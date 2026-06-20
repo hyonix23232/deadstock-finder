@@ -1,0 +1,1 @@
+ALTER TABLE "Store" ADD COLUMN "lastDetectionAt" TIMESTAMPTZ;
