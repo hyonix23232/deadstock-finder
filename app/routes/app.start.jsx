@@ -1,4 +1,3 @@
-import { json } from "react-router";
 import prisma from "../db.server";
 import { scanStore } from "../services/scanner.server";
 import { detectDeadStock } from "../services/detection.server";
@@ -9,7 +8,7 @@ export const action = async ({ request }) => {
   const threshold = parseInt(formData.get("threshold") || "60", 10);
 
   if (!shop) {
-    return json({ ok: false, error: "Missing shop" }, { status: 400 });
+    return new Response(JSON.stringify({ ok: false, error: "Missing shop" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   await prisma.store.upsert({
@@ -44,11 +43,11 @@ export const action = async ({ request }) => {
     } catch {}
   }
 
-  return json({ ok: true });
+  return { ok: true };
 };
 
 export const loader = async ({ request }) => {
-  return json({ ok: true });
+  return { ok: true };
 };
 
 export default function Start() {
