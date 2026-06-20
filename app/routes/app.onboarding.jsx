@@ -35,31 +35,17 @@ export const action = async ({ request }) => {
     create: { shop, threshold: Number(threshold), onboardingDone: true, scanStatus: "scanning", scanProgress: 0, scanCurrentProduct: 0, scanTotalProducts: 0 },
   });
 
-  const dbSessions = await prisma.session.findMany({ where: { shop } });
-  for (const s of dbSessions) {
+  (async () => {
     try {
-      const testUrl = `https://${s.shop}/admin/api/2026-04/graphql.json`;
-      const testResp = await fetch(testUrl, {
-        method: "POST",
-        headers: { "X-Shopify-Access-Token": s.accessToken, "Content-Type": "application/json" },
-        body: JSON.stringify({ query: "query { shop { name } }" }),
-      });
-      if (testResp.ok) {
-        (async () => {
-          try {
-            await scanStore(s, shop);
-            await detectDeadStock(shop);
-            await prisma.store.update({ where: { shop }, data: { scanStatus: "completed", scanProgress: 100 } });
-          } catch (e) {
-            const msg = e?.message || String(e);
-            console.error("Background scan error:", msg, e?.stack || "");
-            await prisma.store.update({ where: { shop }, data: { scanStatus: `error: ${msg.substring(0, 300)}` } });
-          }
-        })();
-        break;
-      }
-    } catch {}
-  }
+      await scanStore(session, shop);
+      await detectDeadStock(shop);
+      await prisma.store.update({ where: { shop }, data: { scanStatus: "completed", scanProgress: 100 } });
+    } catch (e) {
+      const msg = e?.message || String(e);
+      console.error("Background scan error:", msg, e?.stack || "");
+      await prisma.store.update({ where: { shop }, data: { scanStatus: `error: ${msg.substring(0, 300)}` } });
+    }
+  })();
 
   const url = new URL(request.url);
   const host = url.searchParams.get("host") || "";
