@@ -46,6 +46,7 @@ export const loader = async ({ request }) => {
     orderBy: { daysSinceSale: "desc" },
   });
 
+  const plan = store.plan;
   return { redirectTo: "", stats, deadStock, plan, canBulk: hasFeature(plan, "bulk"), needsScan, scanStatus: store.scanStatus };
 };
 
