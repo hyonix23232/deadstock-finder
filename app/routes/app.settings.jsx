@@ -60,7 +60,7 @@ export const action = async ({ request }) => {
       where: { shop: session.shop },
       data: { threshold },
     });
-    return { ok: true, message: "Threshold updated" };
+    return { ok: true, intent: "update-threshold", message: "Threshold updated" };
   }
 
   if (intent === "toggle-email") {
@@ -121,10 +121,19 @@ export default function Settings() {
   }, [subscribeFetcher.data]);
 
   useEffect(() => {
-    if (fetcher.state === "submitting") {
-      window.shopify?.toast?.show?.("Scan started...");
+    if (fetcher.data?.ok && fetcher.data?.intent === "update-threshold") {
+      window.shopify?.toast?.show?.("Threshold updated");
     }
-  }, [fetcher.state]);
+  }, [fetcher.data]);
+
+  useEffect(() => {
+    if (fetcher.state === "submitting") {
+      const isThreshold = fetcher.formData?.get?.("intent") === "update-threshold";
+      if (!isThreshold) {
+        window.shopify?.toast?.show?.("Scan started...");
+      }
+    }
+  }, [fetcher.state, fetcher.formData]);
 
   return (
     <Page title="Settings">
