@@ -174,9 +174,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!polling) return;
+    const loc = new URL(window.location.href);
+    const shop = loc.searchParams.get("shop");
     const interval = setInterval(async () => {
       try {
-        const res = await fetch("/app/scan-status");
+        const url = shop ? `/app/scan-status?shop=${encodeURIComponent(shop)}&t=${Date.now()}` : "/app/scan-status";
+        const res = await fetch(url);
         const data = await res.json();
         setScanProgress(data.scanProgress || 0);
         setScanCurrent(data.scanCurrentProduct || 0);
