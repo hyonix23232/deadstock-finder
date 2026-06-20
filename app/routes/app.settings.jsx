@@ -2,7 +2,7 @@ import { useLoaderData, useFetcher } from "react-router";
 import { useEffect, useState } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { Page, Card, Text, BlockStack, InlineStack, Button, Banner, ChoiceList, DataTable, Badge, Box, Checkbox } from "@shopify/polaris";
-import { authenticate } from "../shopify.server";
+import { authenticate, sessionStorage } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { hasFeature } from "../services/billing.server";
 import prisma from "../db.server";
@@ -45,9 +45,14 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  const { session, billing } = await authenticate.admin(request);
+  const { session, billing, redirect } = await authenticate.admin(request);
   const formData = await request.formData();
   const intent = formData.get("intent");
+
+  if (intent === "reset-session") {
+    await sessionStorage.deleteSession(session.id);
+    return redirect(`/app/settings?shop=${session.shop}`, { target: "_self" });
+  }
 
   if (intent === "update-threshold") {
     const threshold = parseInt(formData.get("threshold") || "60", 10);
@@ -294,11 +299,12 @@ export default function Settings() {
                   <input type="hidden" name="threshold" value={threshold} />
                   <Button variant="secondary" fullWidth submit>Rescan Now</Button>
                 </fetcher.Form>
-                <InlineStack gap="200">
-                  <Button variant="tertiary" url={`/reauthorize?shop=${encodeURIComponent(store.shop)}`}>
-                    Reset Session
-                  </Button>
-                </InlineStack>
+                <fetcher.Form method="post">
+                  <input type="hidden" name="intent" value="reset-session" />
+                  <InlineStack gap="200">
+                    <Button variant="tertiary" submit>Reset Session</Button>
+                  </InlineStack>
+                </fetcher.Form>
                 {store.lastScanAt && (
                   <Text variant="bodySm" tone="subdued" as="p">
                     Last scan: {new Date(store.lastScanAt).toLocaleDateString()}
