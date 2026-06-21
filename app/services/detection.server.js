@@ -38,17 +38,21 @@ export async function detectDeadStock(shop) {
         where: { productId: product.id, shop, resolved: false },
       });
 
+      const entryData = {
+        threshold,
+        daysSinceSale: daysSince,
+        reason,
+        suggestedAction: suggestion.action,
+        suggestedData: suggestion.data ? JSON.stringify(suggestion.data) : null,
+      };
       if (!existing) {
         await prisma.deadStockEntry.create({
-          data: {
-            productId: product.id,
-            shop,
-            threshold,
-            daysSinceSale: daysSince,
-            reason,
-            suggestedAction: suggestion.action,
-            suggestedData: suggestion.data ? JSON.stringify(suggestion.data) : null,
-          },
+          data: { productId: product.id, shop, ...entryData },
+        });
+      } else {
+        await prisma.deadStockEntry.updateMany({
+          where: { id: existing.id },
+          data: entryData,
         });
       }
 
