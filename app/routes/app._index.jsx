@@ -310,9 +310,18 @@ export default function Dashboard() {
     { label: "Plan", value: plan.charAt(0).toUpperCase() + plan.slice(1), tone: undefined },
   ];
 
+  function severityColor(days) {
+    if (days >= 90) return "critical";
+    if (days >= 45) return "warning";
+    if (days >= 14) return "attention";
+    return "info";
+  }
+
   const rows = processedDeadStock.map((entry) => {
     let suggestedData = {};
     try { suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {}; } catch {}
+    const shopName = (entry.product.shop || "").replace(".myshopify.com", "");
+    const numericId = entry.product.id.split("/").pop();
     return [
       ...(canBulk ? [
         <Checkbox
@@ -322,22 +331,37 @@ export default function Dashboard() {
           onChange={() => toggleSelect(entry.product.id)}
         />
       ] : []),
-      entry.product.title,
-      `$${entry.product.price.toFixed(2)}`,
-      entry.product.inventoryCount === -1 ? "Untracked" : String(entry.product.inventoryCount),
-      `${entry.daysSinceSale}d`,
-      entry.reason,
+      <InlineStack gap="200" blockAlign="center">
+        {entry.product.imageUrl ? (
+          <div style={{ width: 40, height: 40, borderRadius: 6, overflow: "hidden", flexShrink: 0, background: "var(--p-color-bg-surface)" }}>
+            <img src={entry.product.imageUrl} alt="" style={{ width: 40, height: 40, objectFit: "cover" }} />
+          </div>
+        ) : (
+          <div style={{ width: 40, height: 40, borderRadius: 6, background: "var(--p-color-bg-fill-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Text variant="bodyXs" as="span" tone="subdued">—</Text>
+          </div>
+        )}
+        <a href={`https://admin.shopify.com/store/${shopName}/products/${numericId}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "var(--p-color-text)" }}>
+          <Text variant="bodyMd" fontWeight="bold" as="span">{entry.product.title}</Text>
+        </a>
+      </InlineStack>,
+      <Text variant="bodyMd" as="span" tone={entry.product.price > 0 ? undefined : "subdued"}>
+        ${entry.product.price.toFixed(2)}
+      </Text>,
+      <Badge tone={entry.product.inventoryCount === -1 ? "info" : entry.product.inventoryCount === 0 ? "warning" : undefined}>
+        {entry.product.inventoryCount === -1 ? "Untracked" : String(entry.product.inventoryCount)}
+      </Badge>,
+      <Badge tone={severityColor(entry.daysSinceSale)}>
+        {entry.daysSinceSale}d
+      </Badge>,
+      <Text variant="bodySm" as="span" tone="subdued">{entry.reason}</Text>,
       <BadgeForAction action={entry.suggestedAction} data={suggestedData} />,
       <ButtonGroup>
         {entry.suggestedAction === "discount" ? (
           <Button
             variant="tertiary"
             size="slim"
-            onClick={() => {
-              const shopName = (entry.product.shop || "").replace(".myshopify.com", "");
-              const numericId = entry.product.id.split("/").pop();
-              window.open(`https://admin.shopify.com/store/${shopName}/products/${numericId}`, "_blank");
-            }}
+            onClick={() => window.open(`https://admin.shopify.com/store/${shopName}/products/${numericId}`, "_blank")}
           >
             Edit — {suggestedData.percentage || 20}% off
           </Button>
@@ -467,7 +491,7 @@ export default function Dashboard() {
               </EmptyState>
             ) : (
               <DataTable
-                columnContentTypes={["text", "text", "numeric", "numeric", "numeric", "text", "text"]}
+                columnContentTypes={Array(dataTableColumns.length).fill("text")}
                 headings={dataTableColumns.map(c => c.content)}
                 rows={rows}
               />

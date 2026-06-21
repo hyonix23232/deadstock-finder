@@ -31,6 +31,9 @@ const PRODUCTS_QUERY = `#graphql
           totalInventory
           category { name }
           createdAt
+          images(first: 1) {
+            edges { node { url } }
+          }
           variants(first: 50) {
             edges { node { price inventoryItem { tracked } } }
           }
@@ -69,6 +72,7 @@ async function fetchAllProducts(session) {
     for (const edge of page.edges) {
       const node = edge.node;
       if (!node) continue;
+      const firstImage = node.images?.edges?.[0]?.node?.url || null;
       products.push({
         id: node.id,
         title: node.title,
@@ -78,6 +82,7 @@ async function fetchAllProducts(session) {
           ? (node.totalInventory ?? 0) : -1,
         category: node.category?.name || null,
         price: parseFloat(node.variants?.edges?.[0]?.node?.price || "0"),
+        imageUrl: firstImage,
         createdAt: new Date(node.createdAt),
       });
     }
@@ -146,6 +151,7 @@ export async function scanStore(session, shop) {
           category: p.category,
           inventoryCount: p.inventoryCount,
           status: p.status,
+          imageUrl: p.imageUrl,
           createdAt: p.createdAt,
         },
       });
@@ -159,6 +165,7 @@ export async function scanStore(session, shop) {
           category: p.category,
           inventoryCount: p.inventoryCount,
           status: p.status,
+          imageUrl: p.imageUrl,
         },
       });
     }
