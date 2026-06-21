@@ -11,7 +11,7 @@ export function generateCsv(entries) {
   const rows = entries.map((e) => [
     e.product.title,
     e.product.price,
-    e.product.inventoryCount,
+    e.product.inventoryCount === -1 ? "Untracked" : e.product.inventoryCount,
     e.daysSinceSale,
     e.reason,
     e.suggestedAction,

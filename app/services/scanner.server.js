@@ -74,7 +74,7 @@ async function fetchAllProducts(session) {
         title: node.title,
         handle: node.handle,
         status: node.status,
-        inventoryCount: node.totalInventory || 0,
+        inventoryCount: node.totalInventory ?? -1,
         category: node.category?.name || null,
         price: parseFloat(node.variants?.edges?.[0]?.node?.price || "0"),
         createdAt: new Date(node.createdAt),

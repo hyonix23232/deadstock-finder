@@ -264,7 +264,7 @@ export default function Dashboard() {
       ] : []),
       entry.product.title,
       `$${entry.product.price.toFixed(2)}`,
-      String(entry.product.inventoryCount),
+      entry.product.inventoryCount === -1 ? "Untracked" : String(entry.product.inventoryCount),
       `${entry.daysSinceSale}d`,
       entry.reason,
       <BadgeForAction action={entry.suggestedAction} data={suggestedData} />,

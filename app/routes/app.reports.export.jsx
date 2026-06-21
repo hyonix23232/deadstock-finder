@@ -76,7 +76,7 @@ export const loader = async ({ request }) => {
       doc.moveDown(0.5);
     }
 
-    const totalValue = entries.reduce((sum, e) => sum + (e.product.price * e.product.inventoryCount), 0);
+    const totalValue = entries.reduce((sum, e) => sum + (e.product.price * Math.max(0, e.product.inventoryCount)), 0);
     doc.moveDown(2);
     doc.fontSize(10).font("Helvetica-Bold").text(`Total stuck inventory value: $${totalValue.toLocaleString()}`);
     doc.moveDown(0.5);

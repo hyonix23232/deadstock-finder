@@ -141,7 +141,7 @@ export async function getDashboardStats(shop) {
 
   const totalDeadStock = deadStock.length;
   const totalValue = deadStock.reduce(
-    (sum, entry) => sum + entry.product.price * entry.product.inventoryCount,
+    (sum, entry) => sum + entry.product.price * Math.max(0, entry.product.inventoryCount),
     0
   );
 

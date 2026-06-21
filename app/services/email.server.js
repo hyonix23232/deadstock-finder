@@ -17,7 +17,7 @@ export async function sendWeeklyEmail(shop) {
     prisma.deadStockEntry.findMany({ where: { shop, resolved: false }, include: { product: true } }),
   ]);
 
-  const totalValue = activeDeadStock.reduce((sum, e) => sum + e.product.price * e.product.inventoryCount, 0);
+  const totalValue = activeDeadStock.reduce((sum, e) => sum + e.product.price * Math.max(0, e.product.inventoryCount), 0);
 
   const sessions = await prisma.session.findMany({ where: { shop }, orderBy: { id: "desc" } });
   let toEmail = null;
