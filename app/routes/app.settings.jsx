@@ -5,6 +5,7 @@ import { Page, Card, Text, BlockStack, InlineStack, Button, Banner, ChoiceList, 
 import { authenticate, sessionStorage } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { hasFeature } from "../services/billing.server";
+import { detectDeadStock } from "../services/detection.server";
 import prisma from "../db.server";
 
 export const loader = async ({ request }) => {
@@ -75,7 +76,8 @@ export const action = async ({ request }) => {
   if (intent === "remove-exclusion") {
     const id = formData.get("exclusionId");
     await prisma.excludedProduct.delete({ where: { id } });
-    return { ok: true, message: "Product restored to detection" };
+    await detectDeadStock(session.shop);
+    return { ok: true, intent: "remove-exclusion", message: "Product restored to detection" };
   }
 
   if (intent === "subscribe") {
