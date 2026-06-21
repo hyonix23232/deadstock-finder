@@ -111,18 +111,35 @@ function generateWhy(product, daysSince, lastOrder) {
 }
 
 function generateSuggestion(product, daysSince) {
-  if (daysSince >= 90 || (!product.lastOrderAt && daysSince >= 60)) {
+  const noInventory = product.inventoryCount <= 0 || product.inventoryCount === -1;
+  const neverSold = !product.lastOrderAt;
+
+  if (neverSold && noInventory) {
+    return {
+      action: "archive",
+      data: { message: "Out of stock with no sales — remove from catalog" },
+    };
+  }
+
+  if (daysSince >= 90 || (neverSold && daysSince >= 30)) {
     return {
       action: "archive",
       data: { message: "Recommend removing from active catalog" },
     };
   }
 
-  if (daysSince >= 45) {
-    const discountPct = Math.min(20 + Math.floor((daysSince - 45) / 15) * 10, 70);
+  if (daysSince >= 30 || (neverSold && daysSince >= 7)) {
+    const discountPct = Math.min(20 + Math.floor((daysSince - 7) / 10) * 10, 70);
     return {
       action: "discount",
       data: { percentage: discountPct, message: `Suggest ${discountPct}% discount` },
+    };
+  }
+
+  if (neverSold) {
+    return {
+      action: "discount",
+      data: { percentage: 10, message: "New product with no sales — try 10% off to build momentum" },
     };
   }
 
