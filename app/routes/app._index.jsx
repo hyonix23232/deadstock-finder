@@ -253,7 +253,7 @@ export default function Dashboard() {
   const rows = processedDeadStock.map((entry) => {
     let suggestedData = {};
     try { suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {}; } catch {}
-    const row = [
+    return [
       ...(canBulk ? [
         <Checkbox
           label=""
