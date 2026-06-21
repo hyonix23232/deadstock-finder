@@ -38,24 +38,17 @@
   <!-- Plan Comparison Card -->
   <g filter="url(#shadow)">
     <rect x="32" y="326" width="1536" height="300" rx="12" fill="#FFFFFF"/>
-    <text x="48" y="356" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Compare Plans</text>
+    <text x="48" y="356" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Plan Features</text>
 
     <!-- Plan headers -->
     <rect x="48" y="380" width="480" height="44" rx="8" fill="#F8FAFC"/>
-    <text x="220" y="408" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#64748B">Free</text>
+    <text x="220" y="408" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#64748B">Essential</text>
     <rect x="540" y="380" width="480" height="44" rx="8" fill="#F8FAFC"/>
     <text x="712" y="408" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#64748B">Starter</text>
     <rect x="1032" y="380" width="480" height="44" rx="8" fill="#EFF6FF"/>
     <text x="1204" y="408" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#2563EB">Pro</text>
 
-    <!-- Row 1: Price -->
-    <text x="48" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Price</text>
-    <text x="240" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F172A">$0</text>
-    <text x="712" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F172A">$15/mo</text>
-    <text x="1204" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#2563EB">$29/mo</text>
-    <line x1="48" y1="462" x2="1512" y2="462" stroke="#F1F5F9" stroke-width="1"/>
-
-    <!-- Row 2: Product limit -->
+    <!-- Row 1: Product limit -->
     <text x="48" y="486" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Product limit</text>
     <text x="228" y="486" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">50</text>
     <text x="700" y="486" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">500</text>
