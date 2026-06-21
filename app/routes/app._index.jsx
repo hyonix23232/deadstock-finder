@@ -253,15 +253,15 @@ export default function Dashboard() {
   const rows = processedDeadStock.map((entry) => {
     let suggestedData = {};
     try { suggestedData = entry.suggestedData ? JSON.parse(entry.suggestedData) : {}; } catch {}
-    return [
-      canBulk ? (
+    const row = [
+      ...(canBulk ? [
         <Checkbox
           label=""
           labelHidden
           checked={selected.has(entry.product.id)}
           onChange={() => toggleSelect(entry.product.id)}
         />
-      ) : null,
+      ] : []),
       entry.product.title,
       `$${entry.product.price.toFixed(2)}`,
       String(entry.product.inventoryCount),
@@ -285,7 +285,7 @@ export default function Dashboard() {
         </fetcher.Form>
       </ButtonGroup>,
     ];
-  }).filter(Boolean);
+  });
 
   const checkboxHeader = canBulk ? (
     <Checkbox
