@@ -69,7 +69,7 @@ export const action = async ({ request }) => {
       where: { shop: session.shop },
       data: { emailEnabled: enabled },
     });
-    return { ok: true, message: "Email preference updated" };
+      return { ok: true, intent: "toggle-email", message: "Email preference updated" };
   }
 
   if (intent === "remove-exclusion") {
@@ -133,7 +133,7 @@ export default function Settings() {
       window.shopify?.toast?.show?.("Session reset complete. Redirecting...");
       setTimeout(() => { window.top.location.href = `/auth?shop=${fetcher.data.shop}`; }, 1500);
     } else if (!fetcher.data?.intent) {
-      window.shopify?.toast?.show?.("Scan completed");
+      window.shopify?.toast?.show?.("Scan triggered — view progress on Dashboard");
     }
   }, [fetcher.data]);
 
@@ -165,6 +165,7 @@ export default function Settings() {
                   titleHidden
                   name="threshold"
                   choices={[
+                    { label: "1 day — For testing", value: "1" },
                     { label: "30 days — Aggressive detection", value: "30" },
                     { label: "60 days — Recommended", value: "60" },
                     { label: "90 days — Lenient detection", value: "90" },

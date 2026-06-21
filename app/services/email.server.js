@@ -1,65 +1,64 @@
 import prisma from "../db.server";
 
+const BREVO_API = "https://api.brevo.com/v3/smtp/email";
+
 export async function sendWeeklyEmail(shop) {
   const store = await prisma.store.findUnique({ where: { shop } });
-  if (!store || !store.emailEnabled) return;
+  if (!store || !store.emailEnabled) return { sent: false, reason: "email disabled" };
+
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) return { sent: false, reason: "BREVO_API_KEY not configured" };
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const newDeadStock = await prisma.deadStockEntry.findMany({
-    where: { shop, flaggedAt: { gte: sevenDaysAgo }, resolved: false },
-    include: { product: true },
-  });
+  const [newDeadStock, resolvedDeadStock, activeDeadStock] = await Promise.all([
+    prisma.deadStockEntry.findMany({ where: { shop, flaggedAt: { gte: sevenDaysAgo }, resolved: false }, include: { product: true } }),
+    prisma.deadStockEntry.findMany({ where: { shop, resolvedAt: { gte: sevenDaysAgo }, resolved: true }, include: { product: true } }),
+    prisma.deadStockEntry.findMany({ where: { shop, resolved: false }, include: { product: true } }),
+  ]);
 
-  const resolvedDeadStock = await prisma.deadStockEntry.findMany({
-    where: { shop, resolvedAt: { gte: sevenDaysAgo }, resolved: true },
-    include: { product: true },
-  });
+  const totalValue = activeDeadStock.reduce((sum, e) => sum + e.product.price * e.product.inventoryCount, 0);
 
-  const activeDeadStock = await prisma.deadStockEntry.findMany({
-    where: { shop, resolved: false },
-    include: { product: true },
-  });
+  const sessions = await prisma.session.findMany({ where: { shop }, orderBy: { id: "desc" } });
+  let toEmail = null;
 
-  const totalValue = activeDeadStock.reduce(
-    (sum, e) => sum + e.product.price * e.product.inventoryCount, 0
-  );
+  for (const s of sessions) {
+    if (s.email) { toEmail = s.email; break; }
+    if (s.accessToken) {
+      try {
+        const resp = await fetch(`https://${shop}/admin/api/2026-04/shop.json`, { headers: { "X-Shopify-Access-Token": s.accessToken } });
+        if (resp.ok) { toEmail = (await resp.json()).shop.email; break; }
+      } catch {}
+    }
+  }
 
-  const transporter = await getTransporter();
-  if (!transporter) return;
+  if (!toEmail) toEmail = process.env.TO_EMAIL;
+  if (!toEmail) return { sent: false, reason: "no email found" };
 
-  const ownerSession = await prisma.session.findFirst({ where: { shop, accountOwner: true }, orderBy: { createdAt: "desc" } });
-  const toEmail = ownerSession?.email || shop;
-
-  const emailContent = {
-    from: process.env.FROM_EMAIL || "noreply@deadstockfinder.com",
-    to: toEmail,
-    subject: `Dead Stock Finder — Weekly Report (${new Date().toLocaleDateString()})`,
-    html: buildEmailHtml(newDeadStock, resolvedDeadStock, totalValue, store.threshold),
-  };
+  const html = buildEmailHtml(newDeadStock, resolvedDeadStock, totalValue, store.threshold);
 
   try {
-    await transporter.sendMail(emailContent);
-    console.log(`Weekly email sent to ${shop}`);
+    const resp = await fetch(BREVO_API, {
+      method: "POST",
+      headers: { accept: "application/json", "api-key": apiKey, "content-type": "application/json" },
+      body: JSON.stringify({
+        sender: { email: process.env.FROM_EMAIL || "noreply@deadstockfinder.com" },
+        to: [{ email: toEmail }],
+        subject: `Dead Stock Finder — Weekly Report (${new Date().toLocaleDateString()})`,
+        htmlContent: html,
+      }),
+    });
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.error(`Brevo API error for ${shop}: ${resp.status} ${text.substring(0, 200)}`);
+      return { sent: false, reason: `Brevo API ${resp.status}` };
+    }
+    console.log(`Weekly email sent to ${shop} (${toEmail})`);
+    return { sent: true };
   } catch (err) {
     console.error(`Failed to send email to ${shop}:`, err.message);
+    return { sent: false, reason: err.message };
   }
-}
-
-async function getTransporter() {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    return null;
-  }
-  const nodemailer = await import("nodemailer");
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
 }
 
 function buildEmailHtml(newItems, resolvedItems, totalValue, threshold) {
