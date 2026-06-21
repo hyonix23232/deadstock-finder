@@ -1,5 +1,6 @@
 import prisma from "../db.server";
 import { getOrCreateStore, updateScanProgress } from "./store.server";
+import { getProductLimit } from "./billing.server";
 
 async function shopifyFetch(session, query, variables = {}) {
   const url = `https://${session.shop}/admin/api/2026-04/graphql.json`;
@@ -123,7 +124,9 @@ export async function scanStore(session, shop) {
   const store = await getOrCreateStore(shop);
   await updateScanProgress(shop, "scanning", 0);
 
-  const products = await fetchAllProducts(session);
+  let allProducts = await fetchAllProducts(session);
+  const limit = getProductLimit(store.plan);
+  const products = limit === Infinity ? allProducts : allProducts.slice(0, limit);
   const total = products.length;
   await updateScanProgress(shop, "scanning", 5, 0, total);
 
@@ -170,19 +173,17 @@ export async function scanStore(session, shop) {
       });
     }
 
-    if (store.plan !== "free" || i < 50) {
-      const orders = await fetchProductOrders(session, p.id);
-      const lastOrder = orders.length > 0 ? orders.sort((a, b) => b - a)[0] : null;
-      const totalSales = orders.length;
+    const orders = await fetchProductOrders(session, p.id);
+    const lastOrder = orders.length > 0 ? orders.sort((a, b) => b - a)[0] : null;
+    const totalSales = orders.length;
 
-      await prisma.product.update({
-        where: { id: p.id },
-        data: {
-          lastOrderAt: lastOrder,
-          totalSales,
-        },
-      });
-    }
+    await prisma.product.update({
+      where: { id: p.id },
+      data: {
+        lastOrderAt: lastOrder,
+        totalSales,
+      },
+    });
   }
 
   await updateScanProgress(shop, "completed", 100);
@@ -199,7 +200,7 @@ export async function scanStore(session, shop) {
 
   await prisma.store.update({
     where: { shop },
-    data: { lastScanAt: new Date(), scanStatus: "completed" },
+    data: { lastScanAt: new Date(), scanStatus: "completed", scanTotalProducts: allProducts.length },
   });
 
   return { total, history };

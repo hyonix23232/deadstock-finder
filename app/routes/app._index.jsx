@@ -6,7 +6,7 @@ import { Page, Card, Text, BlockStack, InlineStack, Button, ButtonGroup, Banner,
 import { authenticate } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { getDashboardStats, refreshDeadStock } from "../services/detection.server";
-import { hasFeature } from "../services/billing.server";
+import { hasFeature, getProductLimit } from "../services/billing.server";
 import { generateCsv } from "../services/reports.server";
 import prisma from "../db.server";
 
@@ -47,7 +47,10 @@ export const loader = async ({ request }) => {
   });
 
   const plan = store.plan;
-  return { redirectTo: "", stats, deadStock, plan, canBulk: hasFeature(plan, "bulk"), needsScan, scanStatus: store.scanStatus };
+  const limit = getProductLimit(plan);
+  const totalProducts = store.scanTotalProducts || 0;
+  const limitReached = totalProducts > limit;
+  return { redirectTo: "", stats, deadStock, plan, canBulk: hasFeature(plan, "bulk"), needsScan, scanStatus: store.scanStatus, limit, totalProducts, limitReached };
 };
 
 async function shopifyFetch(session, query, variables = {}) {
@@ -167,7 +170,7 @@ function BadgeForAction({ action, data }) {
 }
 
 export default function Dashboard() {
-  const { redirectTo, stats, deadStock, plan, canBulk, needsScan, scanStatus } = useLoaderData();
+  const { redirectTo, stats, deadStock, plan, canBulk, needsScan, scanStatus, limit, totalProducts, limitReached } = useLoaderData();
   const fetcher = useFetcher();
 
   if (redirectTo) {
@@ -411,6 +414,11 @@ export default function Dashboard() {
         {needsScan && (
           <Banner tone="warning" action={{ content: "Run Scan", onAction: () => navigate("/app/settings") }}>
             Your inventory hasn't been scanned yet or the data is outdated. Run a scan to see dead stock results.
+          </Banner>
+        )}
+        {limitReached && (
+          <Banner tone="warning" action={{ content: "Upgrade", onAction: () => navigate("/app/settings") }}>
+            Your store has {totalProducts} products, but the {plan} plan only scans {limit === Infinity ? "all" : limit}. Only the first {limit} were analyzed. Upgrade to scan more.
           </Banner>
         )}
         <InlineStack gap="300" wrap={false}>
