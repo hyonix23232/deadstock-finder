@@ -339,7 +339,7 @@ export default function Dashboard() {
               window.open(`https://admin.shopify.com/store/${shopName}/products/${numericId}`, "_blank");
             }}
           >
-            {suggestedData.percentage || 20}% off
+            Edit — {suggestedData.percentage || 20}% off
           </Button>
         ) : (
           <fetcher.Form method="post" style={{ display: "inline" }}>
