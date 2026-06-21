@@ -223,8 +223,6 @@ export default function Dashboard() {
         const d = fetcher.data;
         if (d.action === "archive") {
           window.shopify.toast.show(`Archived "${d.title}"`);
-        } else if (d.action === "discount") {
-          window.shopify.toast.show(`Marked "${d.title}" — consider discounting`);
         } else {
           window.shopify.toast.show(d.error || "Done");
         }
@@ -331,13 +329,27 @@ export default function Dashboard() {
       entry.reason,
       <BadgeForAction action={entry.suggestedAction} data={suggestedData} />,
       <ButtonGroup>
-        <fetcher.Form method="post" style={{ display: "inline" }}>
-          <input type="hidden" name="action" value="apply" />
-          <input type="hidden" name="entryId" value={entry.id} />
-          <Button variant="tertiary" size="slim" submit>
-            {entry.suggestedAction === "archive" ? "Archive" : entry.suggestedAction === "bundle" ? "Resolve" : "Apply"}
+        {entry.suggestedAction === "discount" ? (
+          <Button
+            variant="tertiary"
+            size="slim"
+            onClick={() => {
+              const shopName = (entry.product.shop || "").replace(".myshopify.com", "");
+              const numericId = entry.product.id.split("/").pop();
+              window.open(`https://admin.shopify.com/store/${shopName}/products/${numericId}`, "_blank");
+            }}
+          >
+            {suggestedData.percentage || 20}% off
           </Button>
-        </fetcher.Form>
+        ) : (
+          <fetcher.Form method="post" style={{ display: "inline" }}>
+            <input type="hidden" name="action" value="apply" />
+            <input type="hidden" name="entryId" value={entry.id} />
+            <Button variant="tertiary" size="slim" submit>
+              {entry.suggestedAction === "archive" ? "Archive" : "Resolve"}
+            </Button>
+          </fetcher.Form>
+        )}
         <fetcher.Form method="post" style={{ display: "inline" }}>
           <input type="hidden" name="action" value="exclude" />
           <input type="hidden" name="productId" value={entry.product.id} />
