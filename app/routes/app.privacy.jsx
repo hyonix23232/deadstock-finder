@@ -5,14 +5,14 @@ export default function Privacy() {
     <Page title="Privacy Policy">
       <Card>
         <BlockStack gap="400">
-          <Text variant="headingMd" as="h2">Privacy Policy for Dead Stock Finder</Text>
+          <Text variant="headingMd" as="h2">Privacy Policy for GenieStock</Text>
           <Text variant="bodyMd" as="p">
             Last updated: June 2026
           </Text>
 
           <Text variant="headingSm" as="h3">Data We Collect</Text>
           <Text variant="bodyMd" as="p">
-            When you install Dead Stock Finder, we access your Shopify store's product catalog, order history,
+            When you install GenieStock, we access your Shopify store's product catalog, order history,
             and basic store information (shop domain, plan) solely for the purpose of detecting dead stock.
             We do not collect personal information about your customers.
           </Text>

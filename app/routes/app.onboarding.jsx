@@ -121,13 +121,13 @@ export default function Onboarding() {
   }
 
   return (
-    <Page title="Welcome to Dead Stock Finder">
+    <Page title="Welcome to GenieStock">
       <BlockStack gap="400">
         <Card>
           <BlockStack gap="300">
             <Text variant="headingMd" as="h2">Choose your detection threshold</Text>
             <Text variant="bodySm" as="p" tone="subdued">
-              Dead Stock Finder will flag any product that hasn't sold within your chosen time window.
+              GenieStock will flag any product that hasn't sold within your chosen time window.
               You can change this at any time from Settings.
             </Text>
             <BlockStack gap="200">

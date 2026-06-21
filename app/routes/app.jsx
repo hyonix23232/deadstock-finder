@@ -46,7 +46,8 @@ export default function App() {
     <PolarisProvider i18n={enTranslations}>
       <AppProvider embedded apiKey={apiKey}>
         <div style={navStyle}>
-          <div style={{ display: "flex", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ fontWeight: 700, fontSize: 14, color: "#202223", padding: "0 16px 0 0" }}>GenieStock</span>
             <NavLink to={{ pathname: "/app", search }} end style={({ isActive }) => ({ ...linkBase, ...(isActive ? linkActive : {}) })}>
               Dashboard
             </NavLink>
