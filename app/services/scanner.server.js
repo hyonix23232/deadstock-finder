@@ -31,8 +31,8 @@ const PRODUCTS_QUERY = `#graphql
           totalInventory
           category { name }
           createdAt
-          variants(first: 1) {
-            edges { node { price } }
+          variants(first: 50) {
+            edges { node { price inventoryItem { tracked } } }
           }
         }
       }
@@ -74,7 +74,8 @@ async function fetchAllProducts(session) {
         title: node.title,
         handle: node.handle,
         status: node.status,
-        inventoryCount: node.totalInventory ?? -1,
+        inventoryCount: node.variants?.edges?.some(e => e.node?.inventoryItem?.tracked === true)
+          ? (node.totalInventory ?? 0) : -1,
         category: node.category?.name || null,
         price: parseFloat(node.variants?.edges?.[0]?.node?.price || "0"),
         createdAt: new Date(node.createdAt),
