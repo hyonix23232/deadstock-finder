@@ -1,0 +1,243 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F8FAFC"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F87171"/>
+      <stop offset="100%" stop-color="#DC2626"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#0F172A" flood-opacity="0.12"/>
+    </filter>
+    <filter id="shadowSmall">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1600" height="900" fill="url(#heroBg)"/>
+
+  <!-- Subtle grid pattern -->
+  <g opacity="0.03">
+    <line x1="0" y1="100" x2="1600" y2="100" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="0" y1="200" x2="1600" y2="200" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="0" y1="300" x2="1600" y2="300" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="0" y1="400" x2="1600" y2="400" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="0" y1="500" x2="1600" y2="500" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="0" y1="600" x2="1600" y2="600" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="0" y1="700" x2="1600" y2="700" stroke="#FFFFFF" stroke-width="1"/>
+    <line x1="0" y1="800" x2="1600" y2="800" stroke="#FFFFFF" stroke-width="1"/>
+  </g>
+
+  <!-- Accent gradient orb -->
+  <circle cx="1400" cy="100" r="300" fill="#3B82F6" opacity="0.06"/>
+  <circle cx="200" cy="800" r="250" fill="#7C3AED" opacity="0.05"/>
+
+  <!-- ====== LEFT SIDE — VALUE PROPOSITION ====== -->
+  <text x="80" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="800" fill="#FFFFFF" letter-spacing="-1">Stop guessing which</text>
+  <text x="80" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="800" fill="#FFFFFF" letter-spacing="-1">products are dead stock.</text>
+
+  <rect x="80" y="230" width="90" height="4" rx="2" fill="#3B82F6"/>
+
+  <text x="80" y="270" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#94A3B8" font-weight="400">Smart scan identifies unsold inventory and tells you</text>
+  <text x="80" y="300" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#94A3B8" font-weight="400">exactly what to do — archive, discount, or bundle.</text>
+
+  <!-- Feature pills -->
+  <g transform="translate(80, 350)">
+    <rect x="0" y="0" width="180" height="36" rx="18" fill="#1E293B"/>
+    <circle cx="24" cy="18" r="6" fill="#34D399"/>
+    <text x="40" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#CBD5E1">One-click scan</text>
+
+    <rect x="200" y="0" width="200" height="36" rx="18" fill="#1E293B"/>
+    <circle cx="224" cy="18" r="6" fill="#3B82F6"/>
+    <text x="240" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#CBD5E1">Smart suggestions</text>
+
+    <rect x="0" y="50" width="210" height="36" rx="18" fill="#1E293B"/>
+    <circle cx="24" cy="68" r="6" fill="#F59E0B"/>
+    <text x="40" y="74" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#CBD5E1">Color-coded dashboard</text>
+
+    <rect x="230" y="50" width="180" height="36" rx="18" fill="#1E293B"/>
+    <circle cx="254" cy="68" r="6" fill="#A78BFA"/>
+    <text x="270" y="74" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#CBD5E1">CSV &amp; PDF export</text>
+  </g>
+
+  <!-- App store badge -->
+  <rect x="80" y="470" width="220" height="50" rx="12" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="100" y="500" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B">Plan: <tspan fill="#3B82F6" font-weight="600">Free</tspan> · <tspan fill="#3B82F6" font-weight="600">$15/mo</tspan> · <tspan fill="#3B82F6" font-weight="600">$29/mo</tspan></text>
+
+  <!-- ====== RIGHT SIDE — DASHBOARD PREVIEW ====== -->
+
+  <!-- Main dashboard card -->
+  <g transform="translate(710, 60)" filter="url(#shadow)">
+    <rect x="0" y="0" width="810" height="780" rx="16" fill="url(#cardBg)"/>
+
+    <!-- Dashboard header -->
+    <rect x="0" y="0" width="810" height="56" rx="16" fill="#FFFFFF"/>
+    <rect x="0" y="40" width="810" height="16" fill="#FFFFFF"/>
+    <line x1="0" y1="56" x2="810" y2="56" stroke="#E2E8F0" stroke-width="1"/>
+
+    <!-- Nav tabs -->
+    <rect x="24" y="14" width="90" height="28" rx="6" fill="#EFF6FF"/>
+    <text x="44" y="33" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#2563EB" font-weight="600">Dashboard</text>
+    <text x="130" y="33" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B">Settings</text>
+    <text x="195" y="33" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B">Reports</text>
+
+    <!-- Title row -->
+    <text x="24" y="96" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#0F172A" font-weight="700">Dead Stock Overview</text>
+    <text x="24" y="116" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#94A3B8">Last scanned: Today, 2:30 PM — 245 products analyzed</text>
+
+    <!-- Stat cards row -->
+    <!-- Card 1 -->
+    <rect x="24" y="140" width="242" height="72" rx="10" fill="#FFFFFF" filter="url(#shadowSmall)"/>
+    <rect x="24" y="140" width="4" height="72" rx="2" fill="url(#purpleGrad)"/>
+    <text x="42" y="166" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Flagged Products</text>
+    <text x="42" y="194" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#0F172A" font-weight="700">36</text>
+
+    <!-- Card 2 -->
+    <rect x="280" y="140" width="242" height="72" rx="10" fill="#FFFFFF" filter="url(#shadowSmall)"/>
+    <rect x="280" y="140" width="4" height="72" rx="2" fill="url(#redGrad)"/>
+    <text x="298" y="166" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Stuck Value</text>
+    <text x="298" y="194" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#0F172A" font-weight="700">$18,240</text>
+
+    <!-- Card 3 -->
+    <rect x="536" y="140" width="242" height="72" rx="10" fill="#FFFFFF" filter="url(#shadowSmall)"/>
+    <rect x="536" y="140" width="4" height="72" rx="2" fill="url(#greenGrad)"/>
+    <text x="554" y="166" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Resolved This Week</text>
+    <text x="554" y="194" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#0F172A" font-weight="700">12</text>
+
+    <!-- Table header -->
+    <rect x="24" y="228" width="762" height="36" rx="8" fill="#F8FAFC"/>
+    <text x="40" y="251" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B" font-weight="600">PRODUCT</text>
+    <text x="320" y="251" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B" font-weight="600">PRICE</text>
+    <text x="410" y="251" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B" font-weight="600">STOCK</text>
+    <text x="490" y="251" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B" font-weight="600">DAYS</text>
+    <text x="570" y="251" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B" font-weight="600">ACTION</text>
+    <text x="700" y="251" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B" font-weight="600"></text>
+
+    <!-- Table row 1 -->
+    <g transform="translate(24, 275)">
+      <rect x="0" y="0" width="762" height="52" rx="0" fill="#FFFFFF"/>
+      <!-- Product thumbnail placeholder -->
+      <rect x="8" y="11" width="30" height="30" rx="6" fill="#F1F5F9"/>
+      <text x="48" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#2563EB" font-weight="500">Wool Blend Sweater</text>
+      <text x="48" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">wool-sweater</text>
+      <text x="296" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">$89.00</text>
+      <rect x="396" y="16" width="50" height="20" rx="4" fill="#F1F5F9"/>
+      <text x="406" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#64748B">Untracked</text>
+      <rect x="476" y="16" width="44" height="20" rx="10" fill="#FEE2E2"/>
+      <text x="484" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#DC2626" font-weight="600">120d</text>
+      <rect x="556" y="14" width="64" height="24" rx="6" fill="#FEE2E2"/>
+      <text x="564" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#DC2626" font-weight="500">Archive</text>
+      <rect x="660" y="14" width="60" height="24" rx="6" fill="#2563EB"/>
+      <text x="672" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#FFFFFF" font-weight="500">Apply</text>
+      <line x1="8" y1="52" x2="754" y2="52" stroke="#F1F5F9" stroke-width="1"/>
+    </g>
+
+    <!-- Table row 2 -->
+    <g transform="translate(24, 327)">
+      <rect x="0" y="0" width="762" height="52" rx="0" fill="#FFFFFF"/>
+      <rect x="8" y="11" width="30" height="30" rx="6" fill="#F1F5F9"/>
+      <text x="48" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#2563EB" font-weight="500">Classic Leather Jacket</text>
+      <text x="48" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">leather-jacket</text>
+      <text x="296" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">$249.00</text>
+      <rect x="393" y="16" width="56" height="20" rx="4" fill="#ECFDF5"/>
+      <text x="399" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669">In Stock</text>
+      <rect x="476" y="16" width="44" height="20" rx="10" fill="#FEF3C7"/>
+      <text x="484" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#D97706" font-weight="600">74d</text>
+      <rect x="556" y="14" width="64" height="24" rx="6" fill="#FEF3C7"/>
+      <text x="560" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#D97706" font-weight="500">Discount</text>
+      <rect x="660" y="14" width="60" height="24" rx="6" fill="#2563EB"/>
+      <text x="672" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#FFFFFF" font-weight="500">Apply</text>
+      <line x1="8" y1="52" x2="754" y2="52" stroke="#F1F5F9" stroke-width="1"/>
+    </g>
+
+    <!-- Table row 3 -->
+    <g transform="translate(24, 379)">
+      <rect x="0" y="0" width="762" height="52" rx="0" fill="#FFFFFF"/>
+      <rect x="8" y="11" width="30" height="30" rx="6" fill="#F1F5F9"/>
+      <text x="48" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#2563EB" font-weight="500">Canvas Backpack</text>
+      <text x="48" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">canvas-backpack</text>
+      <text x="296" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">$59.00</text>
+      <rect x="393" y="16" width="56" height="20" rx="4" fill="#ECFDF5"/>
+      <text x="399" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669">In Stock</text>
+      <rect x="476" y="16" width="44" height="20" rx="10" fill="#DCFCE7"/>
+      <text x="484" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#16A34A" font-weight="600">32d</text>
+      <rect x="556" y="14" width="64" height="24" rx="6" fill="#DBEAFE"/>
+      <text x="562" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#2563EB" font-weight="500">Bundle</text>
+      <rect x="660" y="14" width="60" height="24" rx="6" fill="#2563EB"/>
+      <text x="672" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#FFFFFF" font-weight="500">Apply</text>
+      <line x1="8" y1="52" x2="754" y2="52" stroke="#F1F5F9" stroke-width="1"/>
+    </g>
+
+    <!-- Table row 4 -->
+    <g transform="translate(24, 431)">
+      <rect x="0" y="0" width="762" height="52" rx="0" fill="#FFFFFF"/>
+      <rect x="8" y="11" width="30" height="30" rx="6" fill="#F1F5F9"/>
+      <text x="48" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#2563EB" font-weight="500">Cotton T-Shirt Pack</text>
+      <text x="48" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">cotton-tshirt</text>
+      <text x="296" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">$39.00</text>
+      <rect x="393" y="16" width="56" height="20" rx="4" fill="#F1F5F9"/>
+      <text x="399" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#64748B">Untracked</text>
+      <rect x="476" y="16" width="44" height="20" rx="10" fill="#FEF3C7"/>
+      <text x="484" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#D97706" font-weight="600">58d</text>
+      <rect x="556" y="14" width="64" height="24" rx="6" fill="#FEF3C7"/>
+      <text x="560" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#D97706" font-weight="500">Discount</text>
+      <rect x="660" y="14" width="60" height="24" rx="6" fill="#2563EB"/>
+      <text x="672" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#FFFFFF" font-weight="500">Apply</text>
+      <line x1="8" y1="52" x2="754" y2="52" stroke="#F1F5F9" stroke-width="1"/>
+    </g>
+
+    <!-- Table row 5 -->
+    <g transform="translate(24, 483)">
+      <rect x="0" y="0" width="762" height="52" rx="0" fill="#FFFFFF"/>
+      <rect x="8" y="11" width="30" height="30" rx="6" fill="#F1F5F9"/>
+      <text x="48" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#2563EB" font-weight="500">Denim Jacket</text>
+      <text x="48" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">denim-jacket</text>
+      <text x="296" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">$119.00</text>
+      <rect x="393" y="16" width="56" height="20" rx="4" fill="#ECFDF5"/>
+      <text x="399" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669">In Stock</text>
+      <rect x="476" y="16" width="44" height="20" rx="10" fill="#FEE2E2"/>
+      <text x="484" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#DC2626" font-weight="600">95d</text>
+      <rect x="556" y="14" width="64" height="24" rx="6" fill="#FEE2E2"/>
+      <text x="564" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#DC2626" font-weight="500">Archive</text>
+      <rect x="660" y="14" width="60" height="24" rx="6" fill="#2563EB"/>
+      <text x="672" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#FFFFFF" font-weight="500">Apply</text>
+    </g>
+
+    <!-- Bottom bar -->
+    <rect x="24" y="548" width="762" height="1" fill="#F1F5F9"/>
+    <text x="24" y="575" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#94A3B8">Showing 5 of 36 flagged products</text>
+    <rect x="700" y="560" width="86" height="28" rx="6" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+    <text x="720" y="579" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">View all →</text>
+  </g>
+
+  <!-- Decorative connecting dots -->
+  <g fill="#3B82F6" opacity="0.2">
+    <circle cx="690" cy="200" r="3"/>
+    <circle cx="700" cy="220" r="2"/>
+    <circle cx="680" cy="240" r="2"/>
+    <circle cx="710" cy="260" r="3"/>
+  </g>
+</svg>

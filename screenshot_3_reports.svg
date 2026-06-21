@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.08"/></filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <!-- Top nav bar -->
+  <rect width="1600" height="48" fill="#FFFFFF"/>
+  <rect y="47" width="1600" height="1" fill="#E2E8F0"/>
+  <text x="24" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="700" fill="#0F172A">Dead Stock Finder</text>
+  <text x="180" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Dashboard</text>
+  <text x="270" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Settings</text>
+  <rect x="340" y="12" width="70" height="24" rx="6" fill="#EFF6FF"/>
+  <text x="350" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#2563EB" font-weight="600">Reports</text>
+  <text x="426" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Privacy</text>
+
+  <!-- Page title -->
+  <text x="32" y="86" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#0F172A">Reports</text>
+  <text x="32" y="108" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#94A3B8">Download and review your dead stock data (Pro plan).</text>
+
+  <!-- Stat cards -->
+  <g filter="url(#shadow)">
+    <rect x="32" y="128" width="500" height="78" rx="10" fill="#FFFFFF"/>
+    <rect x="32" y="128" width="4" height="78" rx="2" fill="#8B5CF6"/>
+    <text x="50" y="156" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Total Scans</text>
+    <text x="50" y="188" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#0F172A">47</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="544" y="128" width="500" height="78" rx="10" fill="#FFFFFF"/>
+    <rect x="544" y="128" width="4" height="78" rx="2" fill="#EF4444"/>
+    <text x="562" y="156" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Total Dead Stock Found</text>
+    <text x="562" y="188" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#0F172A">312</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1056" y="128" width="512" height="78" rx="10" fill="#FFFFFF"/>
+    <rect x="1056" y="128" width="4" height="78" rx="2" fill="#10B981"/>
+    <text x="1074" y="156" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Resolved</text>
+    <text x="1074" y="188" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#0F172A">89</text>
+  </g>
+
+  <!-- Two column layout -->
+  <!-- Left: Scan History -->
+  <g filter="url(#shadow)">
+    <rect x="32" y="224" width="760" height="610" rx="12" fill="#FFFFFF"/>
+    <text x="48" y="256" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Scan History</text>
+    <text x="48" y="278" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Recent scans and their results.</text>
+
+    <!-- Table header -->
+    <rect x="48" y="296" width="728" height="32" rx="6" fill="#F8FAFC"/>
+    <text x="60" y="317" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">DATE</text>
+    <text x="200" y="317" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">TIME</text>
+    <text x="340" y="317" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">PRODUCTS</text>
+    <text x="500" y="317" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">STATUS</text>
+
+    <!-- Scan row 1 -->
+    <rect x="48" y="328" width="728" height="36" fill="#FFFFFF"/>
+    <text x="60" y="350" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Jun 21, 2026</text>
+    <text x="200" y="350" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">2:30 PM</text>
+    <text x="340" y="350" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">245</text>
+    <rect x="490" y="336" width="72" height="20" rx="4" fill="#ECFDF5"/>
+    <text x="498" y="350" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669" font-weight="600">Completed</text>
+    <line x1="48" y1="364" x2="776" y2="364" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Scan row 2 -->
+    <rect x="48" y="364" width="728" height="36" fill="#FFFFFF"/>
+    <text x="60" y="386" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Jun 20, 2026</text>
+    <text x="200" y="386" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">10:15 AM</text>
+    <text x="340" y="386" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">245</text>
+    <rect x="490" y="372" width="72" height="20" rx="4" fill="#ECFDF5"/>
+    <text x="498" y="386" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669" font-weight="600">Completed</text>
+    <line x1="48" y1="400" x2="776" y2="400" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Scan row 3 -->
+    <rect x="48" y="400" width="728" height="36" fill="#FFFFFF"/>
+    <text x="60" y="422" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Jun 18, 2026</text>
+    <text x="200" y="422" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">4:00 PM</text>
+    <text x="340" y="422" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">245</text>
+    <rect x="490" y="408" width="72" height="20" rx="4" fill="#FEE2E2"/>
+    <text x="498" y="422" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#DC2626" font-weight="600">Failed</text>
+    <line x1="48" y1="436" x2="776" y2="436" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Scan row 4 -->
+    <rect x="48" y="436" width="728" height="36" fill="#FFFFFF"/>
+    <text x="60" y="458" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Jun 15, 2026</text>
+    <text x="200" y="458" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">9:00 AM</text>
+    <text x="340" y="458" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">245</text>
+    <rect x="490" y="444" width="72" height="20" rx="4" fill="#ECFDF5"/>
+    <text x="498" y="458" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669" font-weight="600">Completed</text>
+    <line x1="48" y1="472" x2="776" y2="472" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Scan row 5 -->
+    <rect x="48" y="472" width="728" height="36" fill="#FFFFFF"/>
+    <text x="60" y="494" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Jun 12, 2026</text>
+    <text x="200" y="494" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">3:45 PM</text>
+    <text x="340" y="494" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">245</text>
+    <rect x="490" y="480" width="72" height="20" rx="4" fill="#ECFDF5"/>
+    <text x="498" y="494" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669" font-weight="600">Completed</text>
+    <line x1="48" y1="508" x2="776" y2="508" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Scan row 6 -->
+    <rect x="48" y="508" width="728" height="36" fill="#FFFFFF"/>
+    <text x="60" y="530" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Jun 10, 2026</text>
+    <text x="200" y="530" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">11:20 AM</text>
+    <text x="340" y="530" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">245</text>
+    <rect x="490" y="516" width="72" height="20" rx="4" fill="#ECFDF5"/>
+    <text x="498" y="530" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669" font-weight="600">Completed</text>
+  </g>
+
+  <!-- Right: Export Reports -->
+  <g filter="url(#shadow)">
+    <rect x="808" y="224" width="760" height="270" rx="12" fill="#FFFFFF"/>
+    <text x="824" y="256" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Export Reports</text>
+    <text x="824" y="278" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Download your dead stock data for external analysis.</text>
+
+    <rect x="824" y="300" width="336" height="60" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="845" y="328" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#0F172A">📄 Export as CSV</text>
+    <text x="845" y="346" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">Open in Excel, Google Sheets, etc.</text>
+
+    <rect x="1176" y="300" width="336" height="60" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="1197" y="328" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#0F172A">📑 Export as PDF</text>
+    <text x="1197" y="346" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">Printable report with table and summary.</text>
+  </g>
+
+  <!-- Dead Stock History -->
+  <g filter="url(#shadow)">
+    <rect x="808" y="512" width="760" height="322" rx="12" fill="#FFFFFF"/>
+    <text x="824" y="544" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Dead Stock History</text>
+    <text x="824" y="566" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">All flagged products over time.</text>
+
+    <!-- Table header -->
+    <rect x="824" y="584" width="728" height="32" rx="6" fill="#F8FAFC"/>
+    <text x="836" y="605" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">PRODUCT</text>
+    <text x="1100" y="605" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">FLAGGED</text>
+    <text x="1250" y="605" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">DAYS</text>
+    <text x="1400" y="605" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="#64748B">STATUS</text>
+
+    <!-- Row 1 -->
+    <rect x="824" y="616" width="728" height="36" fill="#FFFFFF"/>
+    <text x="836" y="638" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Wool Blend Sweater</text>
+    <text x="1100" y="638" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Jun 10</text>
+    <text x="1250" y="638" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#DC2626">120d</text>
+    <rect x="1390" y="624" width="60" height="20" rx="4" fill="#FEE2E2"/>
+    <text x="1398" y="638" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#DC2626" font-weight="600">Active</text>
+    <line x1="824" y1="652" x2="1552" y2="652" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Row 2 -->
+    <rect x="824" y="652" width="728" height="36" fill="#FFFFFF"/>
+    <text x="836" y="674" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Denim Jacket</text>
+    <text x="1100" y="674" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Jun 15</text>
+    <text x="1250" y="674" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#DC2626">95d</text>
+    <rect x="1390" y="660" width="60" height="20" rx="4" fill="#FEE2E2"/>
+    <text x="1398" y="674" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#DC2626" font-weight="600">Active</text>
+    <line x1="824" y1="688" x2="1552" y2="688" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Row 3 -->
+    <rect x="824" y="688" width="728" height="36" fill="#FFFFFF"/>
+    <text x="836" y="710" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Canvas Backpack</text>
+    <text x="1100" y="710" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Jun 12</text>
+    <text x="1250" y="710" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#16A34A">32d</text>
+    <rect x="1390" y="696" width="60" height="20" rx="4" fill="#ECFDF5"/>
+    <text x="1398" y="710" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#059669" font-weight="600">Active</text>
+    <line x1="824" y1="724" x2="1552" y2="724" stroke="#F1F5F9" stroke-width="1"/>
+
+    <!-- Row 4 -->
+    <rect x="824" y="724" width="728" height="36" fill="#FFFFFF"/>
+    <text x="836" y="746" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Classic Leather Jacket</text>
+    <text x="1100" y="746" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Jun 20</text>
+    <text x="1250" y="746" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#D97706">74d</text>
+    <rect x="1390" y="732" width="60" height="20" rx="4" fill="#FEF3C7"/>
+    <text x="1398" y="746" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#D97706" font-weight="600">Active</text>
+  </g>
+
+  <!-- Footer -->
+  <rect y="850" width="1600" height="50" fill="#FFFFFF"/>
+  <rect y="850" width="1600" height="1" fill="#E2E8F0"/>
+  <text x="32" y="878" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94A3B8">Dead Stock Finder — Identify unsold products and get smart suggestions.</text>
+</svg>

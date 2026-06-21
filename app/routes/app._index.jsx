@@ -248,12 +248,12 @@ export default function Dashboard() {
         if (data.scanStatus === "completed") {
           clearInterval(interval);
           setPolling(false);
-          window.location.reload();
+          navigate(".", { replace: true });
         }
       } catch {}
     }, 1000);
     return () => clearInterval(interval);
-  }, [polling]);
+  }, [polling, navigate]);
 
   const handleBulkDiscount = useCallback(() => {
     const pct = prompt("Discount percentage:", "20");
