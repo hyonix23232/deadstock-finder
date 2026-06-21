@@ -1,7 +1,5 @@
-import { json } from "react-router";
-
 export const loader = () => {
-  return json({});
+  return { ok: true };
 };
 
 export default function PublicPrivacy() {

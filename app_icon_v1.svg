@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+  <!-- App icon background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Box / package -->
+  <rect x="136" y="176" width="240" height="180" rx="16" fill="none" stroke="#FFFFFF" stroke-width="20"/>
+  <rect x="116" y="156" width="280" height="44" rx="12" fill="none" stroke="#FFFFFF" stroke-width="20"/>
+  <line x1="136" y1="260" x2="376" y2="260" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+  <line x1="256" y1="200" x2="256" y2="356" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+  <line x1="136" y1="280" x2="196" y2="280" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+  <line x1="136" y1="320" x2="196" y2="320" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+  <!-- Magnifying glass -->
+  <circle cx="340" cy="280" r="52" fill="none" stroke="#F59E0B" stroke-width="20"/>
+  <line x1="378" y1="318" x2="420" y2="360" stroke="#F59E0B" stroke-width="20" stroke-linecap="round"/>
+</svg>

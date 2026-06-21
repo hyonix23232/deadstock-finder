@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+  <!-- App icon background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Shopping tag -->
+  <path d="M160 160 L320 160 L400 256 L320 352 L160 352 Z" fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linejoin="round"/>
+  <circle cx="220" cy="256" r="24" fill="#F59E0B"/>
+  <!-- Slash mark (dead/unsold) -->
+  <line x1="180" y1="300" x2="340" y2="200" stroke="#EF4444" stroke-width="20" stroke-linecap="round"/>
+</svg>
