@@ -19,7 +19,7 @@ export function generateCsv(entries) {
     e.resolved ? "Yes" : "No",
     e.resolvedAt ? e.resolvedAt.toISOString() : "",
   ].map(escapeCsv));
-  return [headers.join(","), ...rows.join("\n")].join("\n");
+  return [headers.join(","), ...rows].join("\n");
 }
 
 

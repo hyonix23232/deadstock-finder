@@ -92,7 +92,7 @@ export default function Reports() {
   const scanRows = scanHistory.map((scan) => [
     new Date(scan.startedAt).toLocaleDateString(),
     new Date(scan.startedAt).toLocaleTimeString(),
-    scan.productCount || "-",
+    scan.productsScanned || "-",
     scan.status === "completed"
       ? <Badge tone="success">Completed</Badge>
       : scan.status === "failed"

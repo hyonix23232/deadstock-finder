@@ -74,6 +74,18 @@ export async function detectDeadStock(shop) {
     }
   }
 
+  // Update latest scan history with actual dead stock count
+  const latestScan = await prisma.scanHistory.findFirst({
+    where: { shop },
+    orderBy: { startedAt: "desc" },
+  });
+  if (latestScan) {
+    await prisma.scanHistory.update({
+      where: { id: latestScan.id },
+      data: { deadStockFound: deadStockEntries.length },
+    });
+  }
+
   return deadStockEntries;
 }
 
