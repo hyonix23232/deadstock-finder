@@ -285,29 +285,42 @@ export default function Settings() {
           </BlockStack>
         </Card>
 
-        <InlineStack gap="300" wrap={false}>
+        <InlineStack gap="300" wrap={false} align="start">
           <div style={{ flex: 2, minWidth: 300 }}>
             <Card>
               <BlockStack gap="300">
                 <Text variant="headingMd" as="h2">Excluded Products</Text>
                 {excludedProducts.length === 0 ? (
-                  <Text variant="bodyMd" as="p" tone="subdued">
-                    No excluded products. Use the "Ignore" button on the dashboard to exclude products from detection.
-                  </Text>
+                  <Box padding="200">
+                    <Text variant="bodyMd" as="p" tone="subdued">
+                      No excluded products. Use the "Ignore" button on the dashboard to exclude products from detection.
+                    </Text>
+                  </Box>
                 ) : (
-                  <DataTable
-                    columnContentTypes={["text", "text", "text"]}
-                    headings={["Product", "Reason", "Action"]}
-                    rows={excludedProducts.map((ep) => [
-                      ep.product?.title || "Unknown",
-                      ep.reason || "Manual exclusion",
-                      <fetcher.Form method="post" key={ep.id}>
-                        <input type="hidden" name="intent" value="remove-exclusion" />
-                        <input type="hidden" name="exclusionId" value={ep.id} />
-                        <Button variant="tertiary" size="slim" submit>Restore</Button>
-                      </fetcher.Form>,
-                    ])}
-                  />
+                  <BlockStack gap="200">
+                    {excludedProducts.map((ep) => (
+                      <div key={ep.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", borderBottom: "1px solid var(--p-color-border-subdued)" }}>
+                        {ep.product?.imageUrl ? (
+                          <div style={{ width: 44, height: 44, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: "var(--p-color-bg-surface)" }}>
+                            <img src={ep.product.imageUrl} alt="" style={{ width: 44, height: 44, objectFit: "cover" }} />
+                          </div>
+                        ) : (
+                          <div style={{ width: 44, height: 44, borderRadius: 8, background: "var(--p-color-bg-fill-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <Text variant="bodyXs" as="span" tone="subdued">—</Text>
+                          </div>
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <Text variant="bodyMd" fontWeight="bold" as="p">{ep.product?.title || "Unknown"}</Text>
+                          <Text variant="bodySm" tone="subdued" as="p">{ep.reason || "Manual exclusion"}</Text>
+                        </div>
+                        <fetcher.Form method="post" key={ep.id}>
+                          <input type="hidden" name="intent" value="remove-exclusion" />
+                          <input type="hidden" name="exclusionId" value={ep.id} />
+                          <Button variant="tertiary" size="slim" submit>Restore</Button>
+                        </fetcher.Form>
+                      </div>
+                    ))}
+                  </BlockStack>
                 )}
               </BlockStack>
             </Card>
