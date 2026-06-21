@@ -11,11 +11,11 @@ async function shopifyFetch(session, query, variables = {}) {
     },
     body: JSON.stringify({ query, variables }),
   });
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Shopify API ${resp.status}: ${text.substring(0, 500)}`);
+  const json = await resp.json();
+  if (json.errors) {
+    throw new Error(`Shopify API GraphQL error: ${JSON.stringify(json.errors).substring(0, 300)}`);
   }
-  return resp.json();
+  return json;
 }
 
 const PRODUCTS_QUERY = `#graphql
@@ -41,8 +41,8 @@ const PRODUCTS_QUERY = `#graphql
 `;
 
 const ORDERS_QUERY = `#graphql
-  query GetOrders($productId: ID!, $cursor: String) {
-    orders(first: 250, after: $cursor, query: $productId) {
+  query GetOrders($productQuery: String, $cursor: String) {
+    orders(first: 250, after: $cursor, query: $productQuery) {
       pageInfo { hasNextPage endCursor }
       edges {
         node {
@@ -64,9 +64,11 @@ async function fetchAllProducts(session) {
 
   while (hasNext) {
     const json = await shopifyFetch(session, PRODUCTS_QUERY, { cursor });
-    const page = json.data.products;
+    const page = json?.data?.products;
+    if (!page?.edges) break;
     for (const edge of page.edges) {
       const node = edge.node;
+      if (!node) continue;
       products.push({
         id: node.id,
         title: node.title,
@@ -74,12 +76,12 @@ async function fetchAllProducts(session) {
         status: node.status,
         inventoryCount: node.totalInventory || 0,
         category: node.category?.name || null,
-        price: parseFloat(node.variants.edges[0]?.node?.price || "0"),
+        price: parseFloat(node.variants?.edges?.[0]?.node?.price || "0"),
         createdAt: new Date(node.createdAt),
       });
     }
-    hasNext = page.pageInfo.hasNextPage;
-    cursor = page.pageInfo.endCursor;
+    hasNext = page.pageInfo?.hasNextPage ?? false;
+    cursor = page.pageInfo?.endCursor || null;
   }
   return products;
 }
@@ -88,14 +90,15 @@ async function fetchProductOrders(session, productGid) {
   const orders = [];
   let cursor = null;
   let hasNext = true;
-  const productId = productGid.split("/").pop();
+  const numericId = productGid.split("/").pop();
 
   while (hasNext) {
     const json = await shopifyFetch(session, ORDERS_QUERY, {
-      productId: `gid://shopify/Product/${productId}`,
+      productQuery: `product_id:${numericId}`,
       cursor,
     });
-    const page = json.data.orders;
+    const page = json?.data?.orders;
+    if (!page?.edges) break;
     for (const edge of page.edges) {
       const hasProduct = edge.node.lineItems.edges.some(
         (li) => li.node.product?.id === productGid
@@ -104,8 +107,8 @@ async function fetchProductOrders(session, productGid) {
         orders.push(new Date(edge.node.processedAt));
       }
     }
-    hasNext = page.pageInfo.hasNextPage;
-    cursor = page.pageInfo.endCursor;
+    hasNext = page.pageInfo?.hasNextPage ?? false;
+    cursor = page.pageInfo?.endCursor || null;
   }
   return orders;
 }
