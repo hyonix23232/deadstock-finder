@@ -50,10 +50,54 @@ export const loader = async ({ request }) => {
   return { redirectTo: "", stats, deadStock, plan, canBulk: hasFeature(plan, "bulk"), needsScan, scanStatus: store.scanStatus };
 };
 
+async function shopifyFetch(session, query, variables = {}) {
+  const url = `https://${session.shop}/admin/api/2026-04/graphql.json`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      "X-Shopify-Access-Token": session.accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await resp.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  return json;
+}
+
 export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const action = formData.get("action");
+
+  if (action === "apply") {
+    const entryId = formData.get("entryId");
+    const entry = await prisma.deadStockEntry.findUnique({
+      where: { id: entryId },
+      include: { product: true },
+    });
+    if (!entry) return { ok: false, error: "Entry not found" };
+
+    if (entry.suggestedAction === "archive") {
+      const mutation = `#graphql
+        mutation productUpdate($input: ProductInput!) {
+          productUpdate(input: $input) {
+            product { id status }
+            userErrors { field message }
+          }
+        }
+      `;
+      await shopifyFetch(session, mutation, {
+        input: { id: entry.productId, status: "ARCHIVED" },
+      });
+    }
+
+    await prisma.deadStockEntry.updateMany({
+      where: { id: entryId },
+      data: { resolved: true, resolvedAt: new Date() },
+    });
+    return { ok: true, action: entry.suggestedAction, title: entry.product.title };
+  }
 
   if (action === "exclude") {
     const productId = formData.get("productId");
@@ -78,7 +122,18 @@ export const action = async ({ request }) => {
 
   if (action === "bulk-archive") {
     const ids = JSON.parse(formData.get("ids") || "[]");
+    const mutation = `#graphql
+      mutation productUpdate($input: ProductInput!) {
+        productUpdate(input: $input) {
+          product { id status }
+          userErrors { field message }
+        }
+      }
+    `;
     for (const id of ids) {
+      try {
+        await shopifyFetch(session, mutation, { input: { id, status: "ARCHIVED" } });
+      } catch {}
       await prisma.deadStockEntry.updateMany({
         where: { productId: id, shop: session.shop },
         data: { resolved: true, resolvedAt: new Date() },
@@ -98,7 +153,7 @@ export const action = async ({ request }) => {
     });
   }
 
-  return null;
+  return { ok: true };
 };
 
 function BadgeForAction({ action, data }) {
@@ -165,7 +220,14 @@ export default function Dashboard() {
   useEffect(() => {
     if (fetcher.data && fetcher.state === "idle") {
       if (typeof window !== "undefined" && window.shopify?.toast) {
-        window.shopify.toast.show("Action completed");
+        const d = fetcher.data;
+        if (d.action === "archive") {
+          window.shopify.toast.show(`Archived "${d.title}"`);
+        } else if (d.action === "discount") {
+          window.shopify.toast.show(`Marked "${d.title}" — consider discounting`);
+        } else {
+          window.shopify.toast.show(d.error || "Done");
+        }
       }
     }
   }, [fetcher.data, fetcher.state]);
@@ -269,13 +331,13 @@ export default function Dashboard() {
       entry.reason,
       <BadgeForAction action={entry.suggestedAction} data={suggestedData} />,
       <ButtonGroup>
-        <Button
-          variant="tertiary"
-          size="slim"
-          onClick={() => window.shopify?.toast?.show?.(`Apply ${suggestedData.percentage || 20}% discount to ${entry.product.title}`)}
-        >
-          Apply
-        </Button>
+        <fetcher.Form method="post" style={{ display: "inline" }}>
+          <input type="hidden" name="action" value="apply" />
+          <input type="hidden" name="entryId" value={entry.id} />
+          <Button variant="tertiary" size="slim" submit>
+            {entry.suggestedAction === "archive" ? "Archive" : entry.suggestedAction === "bundle" ? "Resolve" : "Apply"}
+          </Button>
+        </fetcher.Form>
         <fetcher.Form method="post" style={{ display: "inline" }}>
           <input type="hidden" name="action" value="exclude" />
           <input type="hidden" name="productId" value={entry.product.id} />
