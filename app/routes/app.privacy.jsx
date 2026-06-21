@@ -13,14 +13,14 @@ export default function Privacy() {
           <Text variant="headingSm" as="h3">Data We Collect</Text>
           <Text variant="bodyMd" as="p">
             When you install Dead Stock Finder, we access your Shopify store's product catalog, order history,
-            and basic store information (shop domain, email, plan) solely for the purpose of detecting dead stock.
+            and basic store information (shop domain, plan) solely for the purpose of detecting dead stock.
             We do not collect personal information about your customers.
           </Text>
 
           <Text variant="headingSm" as="h3">How We Use Your Data</Text>
           <Text variant="bodyMd" as="p">
             Your product and order data is used to: (1) scan inventory and flag unsold products, (2) generate
-            dead stock insights and action suggestions, (3) send weekly email summaries if enabled, and
+            dead stock insights and action suggestions, and
             (4) generate downloadable reports.
           </Text>
 

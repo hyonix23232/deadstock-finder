@@ -1,7 +1,7 @@
 import { useLoaderData, useFetcher } from "react-router";
 import { useEffect, useState } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { Page, Card, Text, BlockStack, InlineStack, Button, Banner, ChoiceList, DataTable, Badge, Box, Checkbox } from "@shopify/polaris";
+import { Page, Card, Text, BlockStack, InlineStack, Button, ChoiceList, Badge, Box } from "@shopify/polaris";
 import { authenticate, sessionStorage } from "../shopify.server";
 import { getOrCreateStore } from "../services/store.server";
 import { hasFeature } from "../services/billing.server";
@@ -38,7 +38,7 @@ export const loader = async ({ request }) => {
   return {
     store,
     excludedProducts,
-    canEmail: hasFeature(plan, "email"),
+
     canBulk: hasFeature(plan, "bulk"),
     currentPlan: plan,
     billingPlans,
@@ -62,15 +62,6 @@ export const action = async ({ request }) => {
       data: { threshold },
     });
     return { ok: true, intent: "update-threshold", message: "Threshold updated" };
-  }
-
-  if (intent === "toggle-email") {
-    const enabled = formData.get("email") === "on";
-    await prisma.store.update({
-      where: { shop: session.shop },
-      data: { emailEnabled: enabled },
-    });
-      return { ok: true, intent: "toggle-email", message: "Email preference updated" };
   }
 
   if (intent === "remove-exclusion") {
@@ -102,14 +93,13 @@ const PLAN_META = {
 
 const ALL_PLAN_FEATURES = [
   { key: "products", free: "50 products scanned", starter: "500 products scanned", pro: "Unlimited products" },
-  { key: "email", free: "Email alerts", starter: "Email alerts", pro: "Email alerts" },
   { key: "bulk", free: "Bulk actions", starter: "Bulk actions", pro: "Bulk actions" },
   { key: "reports", free: "Reports & export", starter: "Reports & export", pro: "Reports & export" },
   { key: "trial", free: "7-day free trial", starter: "7-day free trial", pro: "7-day free trial" },
 ];
 
 export default function Settings() {
-  const { store, excludedProducts, canEmail, canBulk, currentPlan, billingPlans } = useLoaderData();
+  const { store, excludedProducts, canBulk, currentPlan, billingPlans } = useLoaderData();
   const fetcher = useFetcher();
   const subscribeFetcher = useFetcher();
   const [threshold, setThreshold] = useState(String(store.threshold));
@@ -127,8 +117,6 @@ export default function Settings() {
     if (!fetcher.data?.ok) return;
     if (fetcher.data?.intent === "update-threshold") {
       window.shopify?.toast?.show?.("Threshold updated");
-    } else if (fetcher.data?.intent === "toggle-email") {
-      window.shopify?.toast?.show?.("Email preference saved");
     } else if (fetcher.data?.intent === "remove-exclusion") {
       window.shopify?.toast?.show?.("Product restored");
     } else if (fetcher.data?.intent === "reset-session") {
@@ -192,11 +180,11 @@ export default function Settings() {
                 const isCurrent = planKey === currentPlan;
                 const planOrder = ["free", "starter", "pro"];
                 const isUpgrade = planOrder.indexOf(planKey) > planOrder.indexOf(currentPlan);
-                const features = ["products", "email", "bulk", "trial", "reports"];
+                const features = ["products", "bulk", "trial", "reports"];
                 const included = {
-                  free: [true, false, false, false, false],
-                  starter: [true, true, true, true, false],
-                  pro: [true, true, true, true, true],
+                  free: [true, false, false, false],
+                  starter: [true, true, true, false],
+                  pro: [true, true, true, true],
                 };
                 return (
                   <div key={planKey} style={{
@@ -253,35 +241,6 @@ export default function Settings() {
                 );
               })}
             </div>
-          </BlockStack>
-        </Card>
-
-        <Card>
-          <BlockStack gap="300">
-            <Text variant="headingMd" as="h2">Email Alerts</Text>
-            {canEmail ? (
-              <BlockStack gap="200">
-                <Checkbox
-                  label="Receive weekly Monday morning email summaries with dead stock updates"
-                  checked={store.emailEnabled}
-                  onChange={(checked) => {
-                    const formData = new FormData();
-                    formData.append("intent", "toggle-email");
-                    formData.append("email", checked ? "on" : "off");
-                    fetcher.submit(formData, { method: "post" });
-                  }}
-                />
-              </BlockStack>
-            ) : (
-              <Banner tone="warning">
-                <BlockStack gap="200">
-                  <Text variant="bodyMd" as="p">
-                    Email alerts are available on Starter and Pro plans.
-                    {currentPlan === "free" ? " Upgrade to enable weekly dead stock summaries." : ""}
-                  </Text>
-                </BlockStack>
-              </Banner>
-            )}
           </BlockStack>
         </Card>
 

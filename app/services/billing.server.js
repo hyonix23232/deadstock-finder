@@ -11,14 +11,14 @@ export const PLANS = {
     price: 15,
     productLimit: 500,
     trialDays: 7,
-    features: ["scan", "detection", "insights", "suggestions", "exclude", "dashboard", "badge", "mobile", "email"],
+    features: ["scan", "detection", "insights", "suggestions", "exclude", "dashboard", "badge", "mobile"],
   },
   pro: {
     name: "Pro",
     price: 29,
     productLimit: Infinity,
     trialDays: 7,
-    features: ["scan", "detection", "insights", "suggestions", "exclude", "dashboard", "badge", "mobile", "email", "bulk", "reports"],
+    features: ["scan", "detection", "insights", "suggestions", "exclude", "dashboard", "badge", "mobile", "bulk", "reports"],
   },
 };
 
