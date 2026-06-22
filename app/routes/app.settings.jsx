@@ -104,12 +104,15 @@ export default function Settings() {
   const subscribeFetcher = useFetcher();
   const [threshold, setThreshold] = useState(String(store.threshold));
 
+  const [billingError, setBillingError] = useState(null);
+
   useEffect(() => {
-    if (subscribeFetcher.data?.ok) {
-      window.shopify?.toast?.show?.(subscribeFetcher.data.message);
-    }
-    if (subscribeFetcher.data?.confirmationUrl) {
+    if (subscribeFetcher.data?.ok && subscribeFetcher.data?.confirmationUrl) {
       window.top.location.href = subscribeFetcher.data.confirmationUrl;
+    }
+    if (subscribeFetcher.data?.ok === false && subscribeFetcher.data?.error) {
+      setBillingError(subscribeFetcher.data.error);
+      window.shopify?.toast?.show?.(subscribeFetcher.data.error, { isError: true });
     }
   }, [subscribeFetcher.data]);
 
@@ -174,6 +177,13 @@ export default function Settings() {
         <Card>
           <BlockStack gap="400">
             <Text variant="headingMd" as="h2">Compare Plans</Text>
+            {billingError && (
+              <div style={{ padding: 12, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, marginBottom: 8 }}>
+                <Text variant="bodySm" as="p" tone="critical">
+                  Billing error: {billingError}. The app needs App Store approval before billing can work.
+                </Text>
+              </div>
+            )}
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               {["free", "starter", "pro"].map((planKey) => {
                 const meta = PLAN_META[planKey];
