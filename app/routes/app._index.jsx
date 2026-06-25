@@ -115,7 +115,32 @@ export const action = async ({ request }) => {
 
   if (action === "bulk-discount") {
     const ids = JSON.parse(formData.get("ids") || "[]");
+    const percentage = parseFloat(formData.get("percentage") || "20");
+    if (percentage <= 0 || percentage >= 100) return { ok: false, error: "Invalid percentage" };
+    const mutation = `#graphql
+      mutation productUpdate($input: ProductInput!) {
+        productUpdate(input: $input) {
+          product { id title }
+          userErrors { field message }
+        }
+      }
+    `;
     for (const id of ids) {
+      const product = await prisma.product.findUnique({
+        where: { id },
+        select: { price: true },
+      });
+      if (!product) continue;
+      const discountedPrice = product.price * (1 - percentage / 100);
+      try {
+        await shopifyFetch(session, mutation, {
+          input: {
+            id,
+            compareAtPrice: product.price.toFixed(2),
+            price: discountedPrice.toFixed(2),
+          },
+        });
+      } catch {}
       await prisma.deadStockEntry.updateMany({
         where: { productId: id, shop: session.shop },
         data: { resolved: true, resolvedAt: new Date() },

@@ -200,7 +200,7 @@ export async function scanStore(session, shop) {
 
   await prisma.store.update({
     where: { shop },
-    data: { lastScanAt: new Date(), scanStatus: "completed", scanTotalProducts: allProducts.length },
+    data: { lastScanAt: new Date(), scanTotalProducts: allProducts.length },
   });
 
   return { total, history };
