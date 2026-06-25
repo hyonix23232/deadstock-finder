@@ -113,41 +113,6 @@ export const action = async ({ request }) => {
     });
   }
 
-  if (action === "bulk-discount") {
-    const ids = JSON.parse(formData.get("ids") || "[]");
-    const percentage = parseFloat(formData.get("percentage") || "20");
-    if (percentage <= 0 || percentage >= 100) return { ok: false, error: "Invalid percentage" };
-    const mutation = `#graphql
-      mutation productUpdate($input: ProductInput!) {
-        productUpdate(input: $input) {
-          product { id title }
-          userErrors { field message }
-        }
-      }
-    `;
-    for (const id of ids) {
-      const product = await prisma.product.findUnique({
-        where: { id },
-        select: { price: true },
-      });
-      if (!product) continue;
-      const discountedPrice = product.price * (1 - percentage / 100);
-      try {
-        await shopifyFetch(session, mutation, {
-          input: {
-            id,
-            compareAtPrice: product.price.toFixed(2),
-            price: discountedPrice.toFixed(2),
-          },
-        });
-      } catch {}
-      await prisma.deadStockEntry.updateMany({
-        where: { productId: id, shop: session.shop },
-        data: { resolved: true, resolvedAt: new Date() },
-      });
-    }
-  }
-
   if (action === "bulk-archive") {
     const ids = JSON.parse(formData.get("ids") || "[]");
     const mutation = `#graphql
@@ -279,14 +244,6 @@ export default function Dashboard() {
     }, 1000);
     return () => clearInterval(interval);
   }, [polling, navigate]);
-
-  const handleBulkDiscount = useCallback(() => {
-    const pct = prompt("Discount percentage:", "20");
-    if (pct) fetcher.submit(
-      { action: "bulk-discount", ids: JSON.stringify([...selected]), percentage: pct },
-      { method: "post" }
-    );
-  }, [selected, fetcher]);
 
   const handleBulkArchive = useCallback(() => {
     if (confirm("Archive selected products?")) fetcher.submit(
@@ -472,7 +429,6 @@ export default function Dashboard() {
             <InlineStack gap="300" align="space-between" blockAlign="center">
               <Text variant="bodyMd" fontWeight="bold" as="span">{selected.size} selected</Text>
               <ButtonGroup>
-                <Button variant="secondary" size="slim" onClick={handleBulkDiscount}>Bulk Discount</Button>
                 <Button variant="secondary" size="slim" onClick={handleBulkArchive}>Bulk Archive</Button>
                 <Button variant="secondary" size="slim" onClick={handleBulkExport}>Export CSV</Button>
               </ButtonGroup>
