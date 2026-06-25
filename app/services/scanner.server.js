@@ -44,15 +44,15 @@ const PRODUCTS_QUERY = `#graphql
   }
 `;
 
-const ORDERS_QUERY = `#graphql
-  query GetOrders($productQuery: String, $cursor: String) {
-    orders(first: 250, after: $cursor, query: $productQuery) {
+const ALL_ORDERS_QUERY = `#graphql
+  query GetAllOrders($cursor: String) {
+    orders(first: 250, after: $cursor, sortKey: PROCESSED_AT) {
       pageInfo { hasNextPage endCursor }
       edges {
         node {
           id
           processedAt
-          lineItems(first: 10) {
+          lineItems(first: 100) {
             edges { node { product { id } } }
           }
         }
@@ -93,31 +93,28 @@ async function fetchAllProducts(session) {
   return products;
 }
 
-async function fetchProductOrders(session, productGid) {
-  const orders = [];
+async function fetchAllOrders(session) {
+  const productOrders = {}; // productId -> Date[]
   let cursor = null;
   let hasNext = true;
-  const numericId = productGid.split("/").pop();
 
   while (hasNext) {
-    const json = await shopifyFetch(session, ORDERS_QUERY, {
-      productQuery: `product_id:${numericId}`,
-      cursor,
-    });
+    const json = await shopifyFetch(session, ALL_ORDERS_QUERY, { cursor });
     const page = json?.data?.orders;
     if (!page?.edges) break;
     for (const edge of page.edges) {
-      const hasProduct = edge.node.lineItems.edges.some(
-        (li) => li.node.product?.id === productGid
-      );
-      if (hasProduct) {
-        orders.push(new Date(edge.node.processedAt));
+      const processedAt = new Date(edge.node.processedAt);
+      for (const li of edge.node.lineItems.edges) {
+        const pid = li.node.product?.id;
+        if (!pid) continue;
+        if (!productOrders[pid]) productOrders[pid] = [];
+        productOrders[pid].push(processedAt);
       }
     }
     hasNext = page.pageInfo?.hasNextPage ?? false;
     cursor = page.pageInfo?.endCursor || null;
   }
-  return orders;
+  return productOrders;
 }
 
 export async function scanStore(session, shop) {
@@ -136,7 +133,7 @@ export async function scanStore(session, shop) {
 
   for (let i = 0; i < products.length; i++) {
     const p = products[i];
-    const progress = 5 + Math.round(((i + 1) / total) * 85);
+    const progress = 5 + Math.round(((i + 1) / total) * 40);
     await updateScanProgress(shop, "scanning", progress, i + 1, total);
 
     const existingProduct = await prisma.product.findUnique({
@@ -172,18 +169,28 @@ export async function scanStore(session, shop) {
         },
       });
     }
+  }
 
-    const orders = await fetchProductOrders(session, p.id);
-    const lastOrder = orders.length > 0 ? orders.sort((a, b) => b - a)[0] : null;
-    const totalSales = orders.length;
+  await prisma.store.update({ where: { shop }, data: { scanProgress: 50, scanCurrentProduct: total, scanTotalProducts: total } });
+
+  const productOrders = await fetchAllOrders(session);
+  const orderKeys = Object.keys(productOrders);
+  const orderTotal = orderKeys.length;
+
+  for (let i = 0; i < orderKeys.length; i++) {
+    const pid = orderKeys[i];
+    const dates = productOrders[pid];
+    dates.sort((a, b) => b - a);
+    const lastOrder = dates[0];
+    const totalSales = dates.length;
 
     await prisma.product.update({
-      where: { id: p.id },
-      data: {
-        lastOrderAt: lastOrder,
-        totalSales,
-      },
+      where: { id: pid },
+      data: { lastOrderAt: lastOrder, totalSales },
     });
+
+    const progress = 50 + Math.round(((i + 1) / orderTotal) * 45);
+    await prisma.store.update({ where: { shop }, data: { scanProgress: progress, scanCurrentProduct: i + 1 } });
   }
 
   await prisma.store.update({ where: { shop }, data: { scanProgress: 100 } });
