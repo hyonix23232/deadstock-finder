@@ -1,7 +1,7 @@
 import prisma from "../db.server";
 import { getStore } from "./store.server";
 
-export async function detectDeadStock(shop) {
+export async function detectDeadStock(shop, { onProgress } = {}) {
   const store = await getStore(shop);
   if (!store) return [];
 
@@ -33,8 +33,11 @@ export async function detectDeadStock(shop) {
   });
 
   const deadStockEntries = [];
+  const total = products.length;
 
-  for (const product of products) {
+  for (let i = 0; i < products.length; i++) {
+    const product = products[i];
+    if (onProgress) onProgress(i + 1, total);
     const lastOrder = product.lastOrderAt;
     const daysSince = lastOrder
       ? Math.floor((Date.now() - new Date(lastOrder).getTime()) / (1000 * 60 * 60 * 24))

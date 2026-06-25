@@ -38,7 +38,12 @@ export const action = async ({ request }) => {
   (async () => {
     try {
       await scanStore(session, shop);
-      await detectDeadStock(shop);
+      await detectDeadStock(shop, {
+        onProgress: (current, total) => {
+          const pct = Math.min(99, Math.round((current / total) * 100));
+          prisma.store.update({ where: { shop }, data: { scanProgress: pct, scanCurrentProduct: current, scanTotalProducts: total } }).catch(() => {});
+        },
+      });
       await prisma.store.update({ where: { shop }, data: { scanStatus: "completed", scanProgress: 100 } });
     } catch (e) {
       const msg = e?.message || String(e);
