@@ -186,7 +186,7 @@ export async function scanStore(session, shop) {
     });
   }
 
-  await updateScanProgress(shop, "completed", 100);
+  await prisma.store.update({ where: { shop }, data: { scanProgress: 100 } });
 
   const history = await prisma.scanHistory.create({
     data: {
