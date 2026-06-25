@@ -93,12 +93,15 @@ async function fetchAllProducts(session) {
   return products;
 }
 
-async function fetchAllOrders(session) {
-  const productOrders = {}; // productId -> Date[]
+async function fetchAllOrders(session, onPage) {
+  const productOrders = {};
   let cursor = null;
   let hasNext = true;
+  let pageNum = 0;
 
   while (hasNext) {
+    pageNum++;
+    if (onPage) onPage(pageNum);
     const json = await shopifyFetch(session, ALL_ORDERS_QUERY, { cursor });
     const page = json?.data?.orders;
     if (!page?.edges) break;
@@ -173,8 +176,15 @@ export async function scanStore(session, shop) {
 
   await prisma.store.update({ where: { shop }, data: { scanProgress: 50, scanCurrentProduct: total, scanTotalProducts: total } });
 
-  const productOrders = await fetchAllOrders(session);
-  const orderKeys = Object.keys(productOrders);
+  const scannedIds = new Set(products.map(p => p.id));
+  let fetchPageCount = 0;
+  const productOrders = await fetchAllOrders(session, () => {
+    fetchPageCount++;
+    const progress = Math.min(89, 50 + fetchPageCount);
+    prisma.store.update({ where: { shop }, data: { scanProgress: progress } }).catch(() => {});
+  });
+
+  const orderKeys = Object.keys(productOrders).filter(pid => scannedIds.has(pid));
   const orderTotal = orderKeys.length;
 
   for (let i = 0; i < orderKeys.length; i++) {
@@ -184,12 +194,12 @@ export async function scanStore(session, shop) {
     const lastOrder = dates[0];
     const totalSales = dates.length;
 
-    await prisma.product.update({
-      where: { id: pid },
+    await prisma.product.updateMany({
+      where: { id: pid, shop },
       data: { lastOrderAt: lastOrder, totalSales },
     });
 
-    const progress = 50 + Math.round(((i + 1) / orderTotal) * 45);
+    const progress = 90 + Math.round(((i + 1) / orderTotal) * 9);
     await prisma.store.update({ where: { shop }, data: { scanProgress: progress, scanCurrentProduct: i + 1 } });
   }
 
