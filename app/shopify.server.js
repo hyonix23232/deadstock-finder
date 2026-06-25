@@ -20,7 +20,7 @@ const shopify = shopifyApp({
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.SingleMerchant,
   billing: {
-    Starter: {
+    "Starter Plan": {
       trialDays: 7,
       lineItems: [
         {
@@ -30,7 +30,7 @@ const shopify = shopifyApp({
         },
       ],
     },
-    Pro: {
+    "Pro Plan": {
       trialDays: 7,
       lineItems: [
         {

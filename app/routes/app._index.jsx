@@ -41,7 +41,7 @@ export const loader = async ({ request }) => {
   const stats = await getDashboardStats(session.shop);
 
   const deadStock = await prisma.deadStockEntry.findMany({
-    where: { shop: session.shop, resolved: false },
+    where: { shop: session.shop, resolved: false, product: { status: "ACTIVE" } },
     include: { product: true },
     orderBy: { daysSinceSale: "desc" },
   });

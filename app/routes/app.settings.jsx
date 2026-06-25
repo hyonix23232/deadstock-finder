@@ -12,11 +12,24 @@ export const loader = async ({ request }) => {
   const { session, billing } = await authenticate.admin(request);
   const store = await getOrCreateStore(session.shop);
 
+  const url = new URL(request.url);
+  const planHandle = url.searchParams.get("plan_handle");
+  const chargeId = url.searchParams.get("charge_id");
+  const subscribed = planHandle || chargeId;
+
+  const previousPlan = store.plan;
+
   let billingPlans, plan = "free";
   try {
-    billingPlans = await billing.check({ plans: ["Starter", "Pro"] });
-    if (billingPlans?.Pro?.active) plan = "pro";
-    else if (billingPlans?.Starter?.active) plan = "starter";
+    if (process.env.AUTO_UNLOCK_PRO === "true") {
+      console.log("AUTO_UNLOCK_PRO=true detected, forcing plan to pro");
+      plan = "pro";
+    } else {
+      console.log("AUTO_UNLOCK_PRO not true, value:", JSON.stringify(process.env.AUTO_UNLOCK_PRO));
+      billingPlans = await billing.check({ plans: ["Starter Plan", "Pro Plan"] });
+      if (billingPlans?.appSubscriptions?.some(s => s.name === "Pro Plan")) plan = "pro";
+      else if (billingPlans?.appSubscriptions?.some(s => s.name === "Starter Plan")) plan = "starter";
+    }
   } catch (e) {
     console.warn("Billing check failed, defaulting to free:", e.message);
   }
@@ -38,15 +51,15 @@ export const loader = async ({ request }) => {
   return {
     store,
     excludedProducts,
-
     canBulk: hasFeature(plan, "bulk"),
     currentPlan: plan,
     billingPlans,
+    subscribed: !!subscribed && plan !== previousPlan,
   };
 };
 
 export const action = async ({ request }) => {
-  const { session, billing, redirect } = await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const intent = formData.get("intent");
 
@@ -71,17 +84,6 @@ export const action = async ({ request }) => {
     return { ok: true, intent: "remove-exclusion", message: "Product restored to detection" };
   }
 
-  if (intent === "subscribe") {
-    const plan = formData.get("plan");
-    try {
-      const isTest = process.env.SHOPIFY_BILLING_TEST !== "false";
-      const result = await billing.request({ plan, isTest, returnUrl: `${process.env.SHOPIFY_APP_URL || ""}/app/settings` });
-      return { ok: true, confirmationUrl: result.confirmationUrl, message: "Redirecting to billing..." };
-    } catch (e) {
-      return { ok: false, error: String(e?.message || e) || "Billing request failed." };
-    }
-  }
-
   return { ok: false };
 };
 
@@ -99,22 +101,15 @@ const ALL_PLAN_FEATURES = [
 ];
 
 export default function Settings() {
-  const { store, excludedProducts, canBulk, currentPlan, billingPlans } = useLoaderData();
+  const { store, excludedProducts, canBulk, currentPlan, subscribed } = useLoaderData();
   const fetcher = useFetcher();
-  const subscribeFetcher = useFetcher();
   const [threshold, setThreshold] = useState(String(store.threshold));
 
-  const [billingError, setBillingError] = useState(null);
-
   useEffect(() => {
-    if (subscribeFetcher.data?.ok && subscribeFetcher.data?.confirmationUrl) {
-      window.top.location.href = subscribeFetcher.data.confirmationUrl;
+    if (subscribed) {
+      window.shopify?.toast?.show?.("Subscription updated successfully");
     }
-    if (subscribeFetcher.data?.ok === false && subscribeFetcher.data?.error) {
-      setBillingError(subscribeFetcher.data.error);
-      window.shopify?.toast?.show?.(subscribeFetcher.data.error, { isError: true });
-    }
-  }, [subscribeFetcher.data]);
+  }, [subscribed]);
 
   useEffect(() => {
     if (!fetcher.data?.ok) return;
@@ -177,19 +172,14 @@ export default function Settings() {
         <Card>
           <BlockStack gap="400">
             <Text variant="headingMd" as="h2">Compare Plans</Text>
-            {billingError && (
-              <div style={{ padding: 12, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, marginBottom: 8 }}>
-                <Text variant="bodySm" as="p" tone="critical">
-                  Billing error: {billingError}. The app needs App Store approval before billing can work.
-                </Text>
-              </div>
-            )}
+            <Text variant="bodySm" as="p" tone="subdued">
+              Manage your subscription directly from your Shopify admin.
+            </Text>
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               {["free", "starter", "pro"].map((planKey) => {
                 const meta = PLAN_META[planKey];
                 const isCurrent = planKey === currentPlan;
                 const planOrder = ["free", "starter", "pro"];
-                const isUpgrade = planOrder.indexOf(planKey) > planOrder.indexOf(currentPlan);
                 const features = ["products", "bulk", "trial", "reports"];
                 const included = {
                   free: [true, false, false, false],
@@ -237,14 +227,16 @@ export default function Settings() {
                       })}
                     </div>
                     <div style={{ marginTop: "auto" }}>
-                      {!isCurrent && isUpgrade && (
-                        <subscribeFetcher.Form method="post">
-                          <input type="hidden" name="intent" value="subscribe" />
-                          <input type="hidden" name="plan" value={meta.label} />
-                          <Button variant="primary" submit fullWidth loading={subscribeFetcher.state !== "idle"}>
+                      {!isCurrent && planKey !== "free" && (
+                        <a
+                          href={`https://admin.shopify.com/store/${store.shop.replace(".myshopify.com", "")}/charges/geniestock/pricing_plans`}
+                          target="_top"
+                          style={{ textDecoration: "none" }}
+                        >
+                          <Button variant="primary" fullWidth>
                             Upgrade to {meta.label}
                           </Button>
-                        </subscribeFetcher.Form>
+                        </a>
                       )}
                     </div>
                   </div>

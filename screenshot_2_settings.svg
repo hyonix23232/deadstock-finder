@@ -1,113 +1,173 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#F8FAFC"/>
-      <stop offset="100%" stop-color="#F1F5F9"/>
+      <stop offset="0%" stop-color="#F6F8FA"/>
+      <stop offset="100%" stop-color="#F0F2F5"/>
     </linearGradient>
-    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.08"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="1" stdDeviation="4" flood-color="#0F172A" flood-opacity="0.06"/></filter>
+    <filter id="callout"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.12"/></filter>
   </defs>
+
   <rect width="1600" height="900" fill="url(#bg)"/>
 
-  <!-- Top nav bar -->
-  <rect width="1600" height="48" fill="#FFFFFF"/>
-  <rect y="47" width="1600" height="1" fill="#E2E8F0"/>
-  <text x="24" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="700" fill="#0F172A">GenieStock</text>
-  <text x="180" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Dashboard</text>
-  <rect x="250" y="12" width="70" height="24" rx="6" fill="#EFF6FF"/>
-  <text x="260" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#2563EB" font-weight="600">Settings</text>
-  <text x="336" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Reports</text>
-  <text x="406" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Privacy</text>
+  <!-- Nav bar -->
+  <rect width="1600" height="52" fill="#FFFFFF"/>
+  <line x1="0" y1="52" x2="1600" y2="52" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Dashboard tab -->
+  <rect x="20" y="12" width="90" height="28" rx="7" fill="transparent"/>
+  <rect x="28" y="18" width="14" height="14" rx="2" stroke="#94A3B8" stroke-width="1.3" fill="none"/>
+  <rect x="29" y="19" width="4" height="4" rx="0.5" stroke="#94A3B8" stroke-width="1.3" fill="none"/>
+  <rect x="35" y="19" width="4" height="4" rx="0.5" stroke="#94A3B8" stroke-width="1.3" fill="none"/>
+  <rect x="29" y="25" width="4" height="4" rx="0.5" stroke="#94A3B8" stroke-width="1.3" fill="none"/>
+  <rect x="35" y="25" width="4" height="4" rx="0.5" stroke="#94A3B8" stroke-width="1.3" fill="none"/>
+  <text x="48" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B">Dashboard</text>
+
+  <!-- Settings tab (active) -->
+  <rect x="114" y="12" width="90" height="28" rx="7" fill="#EFF6FF"/>
+  <rect x="124" y="18" width="14" height="14" rx="3" stroke="#2563EB" stroke-width="1.3" fill="none"/>
+  <circle cx="131" cy="25" r="2.3" stroke="#2563EB" stroke-width="1.3" fill="none"/>
+  <line x1="131" y1="19" x2="131" y2="21" stroke="#2563EB" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="131" y1="28" x2="131" y2="30" stroke="#2563EB" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="125" y1="25" x2="126" y2="25" stroke="#2563EB" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="136" y1="25" x2="137" y2="25" stroke="#2563EB" stroke-width="1.3" stroke-linecap="round"/>
+  <text x="144" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#2563EB">Settings</text>
+
+  <!-- Reports tab -->
+  <rect x="210" y="18" width="14" height="14" rx="1.5" stroke="#94A3B8" stroke-width="1.3" fill="none"/>
+  <line x1="213" y1="23" x2="218" y2="23" stroke="#94A3B8" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="213" y1="27" x2="218" y2="27" stroke="#94A3B8" stroke-width="1.3" stroke-linecap="round"/>
+  <text x="230" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B">Reports</text>
+
+  <!-- Privacy pill -->
+  <rect x="1470" y="13" width="106" height="26" rx="13" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+  <path d="M1483 22l5-2v2.8c0 2 3.2 3.2 3.2 3.2s3.3-1.2 3.3-3.2V20l5 2" stroke="#94A3B8" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <text x="1508" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="12.5" fill="#94A3B8">Privacy</text>
 
   <!-- Page title -->
-  <text x="32" y="86" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#0F172A">Settings</text>
+  <text x="32" y="96" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#0F172A">Settings</text>
 
+  <!-- Left column -->
   <!-- Detection Threshold Card -->
-  <g filter="url(#shadow)">
-    <rect x="32" y="108" width="540" height="200" rx="12" fill="#FFFFFF"/>
-    <text x="48" y="136" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Detection Threshold</text>
-    <text x="48" y="158" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Products with no sales longer than this will be flagged.</text>
-    <rect x="48" y="180" width="140" height="36" rx="18" fill="#2563EB"/>
-    <text x="82" y="203" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#FFFFFF" font-weight="500">30 days</text>
-    <rect x="196" y="180" width="140" height="36" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
-    <text x="230" y="203" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B">60 days</text>
-    <rect x="344" y="180" width="140" height="36" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
-    <text x="378" y="203" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B">90 days</text>
-    <text x="48" y="248" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94A3B8">Products with 30+ days since last sale will be flagged.</text>
+  <rect x="32" y="120" width="530" height="210" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow)"/>
+  <text x="48" y="152" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Detection Threshold</text>
+  <text x="48" y="172" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Products without a sale in this many days are flagged as dead stock.</text>
+
+  <!-- ChoiceList radio buttons -->
+  <rect x="48" y="190" width="16" height="16" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+  <circle cx="56" cy="198" r="4" fill="#2563EB"/>
+  <text x="74" y="203" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">30 days — Aggressive detection</text>
+
+  <rect x="48" y="218" width="16" height="16" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="74" y="231" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">60 days — Recommended</text>
+
+  <rect x="48" y="246" width="16" height="16" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="74" y="259" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">90 days — Lenient detection</text>
+
+  <rect x="48" y="274" width="16" height="16" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="74" y="287" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#0F172A">1 day — For testing</text>
+
+  <rect x="48" y="304" width="130" height="32" rx="6" fill="#2563EB"/>
+  <text x="80" y="325" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#FFFFFF" font-weight="600">Save threshold</text>
+
+  <!-- Manual Rescan Card -->
+  <rect x="32" y="350" width="530" height="160" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow)"/>
+  <text x="48" y="382" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Manual Rescan</text>
+  <text x="48" y="402" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Trigger a full rescan of your inventory and order history.</text>
+  <rect x="48" y="418" width="490" height="32" rx="6" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="210" y="439" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#2563EB" font-weight="600">Rescan Now</text>
+  <rect x="48" y="460" width="130" height="32" rx="6" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="76" y="481" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#2563EB">Reset Session</text>
+  <text x="48" y="498" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94A3B8">Last scan: 6/21/2026</text>
+
+  <!-- Right column: Compare Plans -->
+  <rect x="582" y="120" width="986" height="390" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow)"/>
+  <text x="598" y="152" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Compare Plans</text>
+  <text x="598" y="172" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Manage your subscription directly from your Shopify admin.</text>
+
+  <!-- Free plan -->
+  <rect x="598" y="190" width="310" height="295" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+  <text x="753" y="224" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle">Free</text>
+  <text x="753" y="252" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#64748B" text-anchor="middle">$0</text>
+  <line x1="628" y1="268" x2="878" y2="268" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="618" y="292" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ 50 products scanned</text>
+  <text x="618" y="318" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#94A3B8">✕ Bulk actions</text>
+  <text x="618" y="344" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#94A3B8">✕ Reports &amp; export</text>
+  <text x="618" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#94A3B8">✕ 7-day free trial</text>
+  <rect x="658" y="440" width="180" height="34" rx="8" fill="#F1F5F9"/>
+  <text x="748" y="463" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748B" text-anchor="middle">Current Plan</text>
+  <rect x="700" y="196" width="100" height="20" rx="10" fill="#E2E8F0"/>
+  <text x="728" y="210" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#64748B" font-weight="600" text-anchor="middle">Current Plan</text>
+
+  <!-- Starter plan -->
+  <rect x="924" y="190" width="310" height="295" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+  <text x="1079" y="224" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#0F172A" text-anchor="middle">Starter</text>
+  <text x="1079" y="252" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#059669" text-anchor="middle">$15/mo</text>
+  <line x1="954" y1="268" x2="1204" y2="268" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="944" y="292" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ 500 products scanned</text>
+  <text x="944" y="318" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ Bulk actions</text>
+  <text x="944" y="344" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#94A3B8">✕ Reports &amp; export</text>
+  <text x="944" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ 7-day free trial</text>
+  <rect x="1000" y="440" width="160" height="34" rx="8" fill="#2563EB"/>
+  <text x="1060" y="463" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#FFFFFF" font-weight="600" text-anchor="middle">Upgrade</text>
+
+  <!-- Pro plan -->
+  <rect x="1250" y="190" width="300" height="295" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+  <text x="1400" y="224" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#2563EB" text-anchor="middle">Pro</text>
+  <text x="1400" y="252" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#059669" text-anchor="middle">$29/mo</text>
+  <line x1="1280" y1="268" x2="1520" y2="268" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="1270" y="292" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ Unlimited products</text>
+  <text x="1270" y="318" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ Bulk actions</text>
+  <text x="1270" y="344" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ Reports &amp; export</text>
+  <text x="1270" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#059669">✓ 7-day free trial</text>
+  <rect x="1320" y="440" width="160" height="34" rx="8" fill="#2563EB"/>
+  <text x="1380" y="463" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#FFFFFF" font-weight="600" text-anchor="middle">Upgrade</text>
+
+  <!-- Bottom left: Excluded Products -->
+  <rect x="32" y="530" width="530" height="200" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow)"/>
+  <text x="48" y="562" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Excluded Products</text>
+
+  <!-- Excluded item 1 -->
+  <rect x="48" y="580" width="500" height="44" rx="6" fill="#F8FAFC"/>
+  <rect x="60" y="590" width="28" height="24" rx="4" fill="#F1F5F9"/>
+  <text x="96" y="606" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A" font-weight="500">Summer Sandals</text>
+  <text x="230" y="606" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">Seasonal item</text>
+  <rect x="478" y="590" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="490" y="606" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#2563EB">Restore</text>
+
+  <!-- Excluded item 2 -->
+  <rect x="48" y="630" width="500" height="44" rx="6" fill="#F8FAFC"/>
+  <rect x="60" y="640" width="28" height="24" rx="4" fill="#F1F5F9"/>
+  <text x="96" y="656" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A" font-weight="500">Holiday Decor Collection</text>
+  <text x="270" y="656" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">Manual exclusion</text>
+  <rect x="478" y="640" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="490" y="656" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#2563EB">Restore</text>
+
+  <!-- Callout boxes -->
+  <g filter="url(#callout)">
+    <rect x="582" y="530" width="360" height="80" rx="10" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+    <rect x="582" y="530" width="4" height="80" rx="2" fill="#3B82F6"/>
+    <text x="602" y="556" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#0F172A">Set your detection threshold</text>
+    <text x="602" y="578" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B">How many days without a sale before a</text>
+    <text x="602" y="594" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B">product is flagged? We recommend 60 days.</text>
   </g>
 
-  <!-- Plan Comparison Card -->
-  <g filter="url(#shadow)">
-    <rect x="32" y="326" width="1536" height="300" rx="12" fill="#FFFFFF"/>
-    <text x="48" y="356" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Plan Features</text>
-
-    <!-- Plan headers -->
-    <rect x="48" y="380" width="480" height="44" rx="8" fill="#F8FAFC"/>
-    <text x="220" y="408" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#64748B">Essential</text>
-    <rect x="540" y="380" width="480" height="44" rx="8" fill="#F8FAFC"/>
-    <text x="712" y="408" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#64748B">Starter</text>
-    <rect x="1032" y="380" width="480" height="44" rx="8" fill="#EFF6FF"/>
-    <text x="1204" y="408" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#2563EB">Pro</text>
-
-    <!-- Row 1: Product limit -->
-    <text x="48" y="486" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Product limit</text>
-    <text x="228" y="486" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">50</text>
-    <text x="700" y="486" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">500</text>
-    <text x="1192" y="486" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Unlimited</text>
-    <line x1="48" y1="498" x2="1512" y2="498" stroke="#F1F5F9" stroke-width="1"/>
-
-    <!-- Row 3: Features -->
-    <text x="48" y="522" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Smart suggestions</text>
-    <text x="240" y="522" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <text x="724" y="522" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <text x="1216" y="522" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <line x1="48" y1="534" x2="1512" y2="534" stroke="#F1F5F9" stroke-width="1"/>
-
-    <!-- Row 4 -->
-    <text x="48" y="558" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Exclusion management</text>
-    <text x="240" y="558" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <text x="724" y="558" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <text x="1216" y="558" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <line x1="48" y1="570" x2="1512" y2="570" stroke="#F1F5F9" stroke-width="1"/>
-
-    <!-- Row 5 -->
-    <text x="48" y="594" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">Bulk actions</text>
-    <text x="240" y="594" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#CBD5E1">—</text>
-    <text x="724" y="594" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <text x="1216" y="594" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
-    <line x1="48" y1="606" x2="1512" y2="606" stroke="#F1F5F9" stroke-width="1"/>
-
-    <!-- Row 6 -->
-    <text x="48" y="630" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A">CSV &amp; PDF reports</text>
-    <text x="240" y="630" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#CBD5E1">—</text>
-    <text x="724" y="630" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#CBD5E1">—</text>
-    <text x="1216" y="630" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#10B981">✓</text>
+  <g filter="url(#callout)">
+    <rect x="960" y="530" width="360" height="80" rx="10" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+    <rect x="960" y="530" width="4" height="80" rx="2" fill="#059669"/>
+    <text x="980" y="556" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#0F172A">Upgrade for more features</text>
+    <text x="980" y="578" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B">Free: 50 products. Starter: 500 + bulk.</text>
+    <text x="980" y="594" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B">Pro: unlimited + reports. 7-day free trials.</text>
   </g>
 
-  <!-- Excluded Products Card -->
-  <g filter="url(#shadow)">
-    <rect x="32" y="644" width="1536" height="190" rx="12" fill="#FFFFFF"/>
-    <text x="48" y="674" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#0F172A">Excluded Products</text>
-    <text x="48" y="696" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748B">Products you've marked to skip on future scans.</text>
-
-    <!-- Excluded item 1 -->
-    <rect x="48" y="714" width="460" height="48" rx="8" fill="#F8FAFC"/>
-    <rect x="60" y="724" width="28" height="28" rx="6" fill="#F1F5F9"/>
-    <text x="96" y="740" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A" font-weight="500">Summer Sandals</text>
-    <text x="390" y="740" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">Excluded: Seasonal</text>
-    <rect x="420" y="722" width="70" height="24" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
-    <text x="432" y="738" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#64748B">Restore</text>
-
-    <!-- Excluded item 2 -->
-    <rect x="520" y="714" width="460" height="48" rx="8" fill="#F8FAFC"/>
-    <rect x="532" y="724" width="28" height="28" rx="6" fill="#F1F5F9"/>
-    <text x="568" y="740" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#0F172A" font-weight="500">Holiday Decorations</text>
-    <text x="862" y="740" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#94A3B8">Excluded: Seasonal</text>
-    <rect x="892" y="722" width="70" height="24" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
-    <text x="904" y="738" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#64748B">Restore</text>
+  <g filter="url(#callout)">
+    <rect x="582" y="625" width="360" height="70" rx="10" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+    <rect x="582" y="625" width="4" height="70" rx="2" fill="#F59E0B"/>
+    <text x="602" y="651" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#0F172A">Exclude intentional inventory</text>
+    <text x="602" y="673" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B">Skip seasonal or strategic products from scans.</text>
   </g>
 
   <!-- Footer -->
-  <rect y="850" width="1600" height="50" fill="#FFFFFF"/>
-  <rect y="850" width="1600" height="1" fill="#E2E8F0"/>
-  <text x="32" y="878" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94A3B8">GenieStock — Identify unsold products and get smart suggestions.</text>
+  <rect y="850" width="1600" height="50" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="32" y="878" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94A3B8">GenieStock — Identify unsold products and recover stuck inventory.</text>
 </svg>

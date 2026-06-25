@@ -8,6 +8,18 @@ export async function detectDeadStock(shop) {
   const threshold = store.threshold;
   const cutoffDate = new Date(Date.now() - threshold * 24 * 60 * 60 * 1000);
 
+  const inactiveProducts = await prisma.product.findMany({
+    where: { shop, status: { not: "ACTIVE" } },
+    select: { id: true },
+  });
+  const inactiveIds = inactiveProducts.map(p => p.id);
+  if (inactiveIds.length > 0) {
+    await prisma.deadStockEntry.updateMany({
+      where: { shop, resolved: false, productId: { in: inactiveIds } },
+      data: { resolved: true, resolvedAt: new Date() },
+    });
+  }
+
   const excludedIds = (
     await prisma.excludedProduct.findMany({ where: { shop }, select: { productId: true } })
   ).map((e) => e.productId);
@@ -168,7 +180,7 @@ function generateSuggestion(product, daysSince) {
 export async function getDashboardStats(shop) {
   const store = await getStore(shop);
   const deadStock = await prisma.deadStockEntry.findMany({
-    where: { shop, resolved: false },
+    where: { shop, resolved: false, product: { status: "ACTIVE" } },
     include: { product: true },
   });
 
