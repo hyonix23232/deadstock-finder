@@ -27,7 +27,7 @@ export const action = async ({ request }) => {
         await detectDeadStock(session.shop, {
           onProgress: (current, total) => {
             const pct = Math.min(99, Math.round((current / total) * 100));
-            prisma.store.update({ where: { shop: session.shop }, data: { scanProgress: pct, scanCurrentProduct: current, scanTotalProducts: total } }).catch(() => {});
+            prisma.store.update({ where: { shop: session.shop }, data: { scanProgress: pct, scanCurrentProduct: current } }).catch(() => {});
           },
         });
         await prisma.store.update({
